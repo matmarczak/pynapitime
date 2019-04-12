@@ -32,5 +32,23 @@ class VideoTest(TestCase):
         self.video.check_for_subs()
         self.assertTrue(self.video.subtitles_exist)
         subs_path.unlink()
-        pass
+
+    def test_get_track_data(self):
+        duration = self.video.get_track_data()
+        self.assertTrue(self.video.duration)
+        self.assertTrue(self.video.frame_rate)
+
+    def test_get_name(self):
+        self.video.parse_name()
+        self.assertTrue(self.video.title)
+        self.assertTrue(self.video.year)
+
+    def test_gather_data(self):
+        self.video.gather_movie_data()
+        self.assertTrue(self.video.duration)
+        self.assertTrue(self.video.frame_rate)
+        self.assertTrue(self.video.title)
+        self.assertTrue(self.video.year)
+
+
 
