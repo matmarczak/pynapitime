@@ -80,6 +80,7 @@ class Browser:
                 fps = re.search(r'FPS:</b> (\d{2}.\d{0,4})', metadata).group()
             except AttributeError:
                 fps = None
+
             subtitles_list.append(dict(hash=i['href'].split(':')[1],
                                        duration=duration_ms,
                                        fps=fps,
@@ -106,10 +107,14 @@ class Browser:
         # page is already cached
         subs_page_1 = self.get_page_subs(movie_page)
         all_subs = subs_page_1
+
         for i in pages[1:]:
             all_subs += self.get_page_subs(movie_page)
 
-        self.subtitles_list = all_subs
+        for i in all_subs:
+            i['duration_diff'] = abs(self.video.duration-i['duration'])
+
+        self.subtitles_list = all_subs.sort(key = lambda x:x['duration_diff'])
         return self.subtitles_list
 
 
