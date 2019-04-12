@@ -1,7 +1,7 @@
 from unittest import TestCase
 from pynapitime.video import Video
 import pathlib
-from tests.config import TEST_FILE_PATH
+from test.config import TEST_FILE_PATH
 import time
 
 class VideoTest(TestCase):
