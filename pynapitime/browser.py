@@ -113,15 +113,8 @@ class Browser:
 
         for i in all_subs:
             i['duration_diff'] = abs(self.video.duration-i['duration'])
-
-        self.subtitles_list = all_subs.sort(key = lambda x:x['duration_diff'])
+        # sort to get best matches first
+        all_subs.sort(key=lambda x: x['duration_diff'])
+        self.subtitles_list = all_subs
         return self.subtitles_list
-
-
-
-
-
-
-
-
 

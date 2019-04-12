@@ -1,5 +1,5 @@
 import unittest
-from config import TEST_FILE_PATH
+from test.config import TEST_FILE_PATH
 from pynapitime.video import Video
 from pynapitime.downloader import Downloader
 

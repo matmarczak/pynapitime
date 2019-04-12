@@ -10,7 +10,6 @@ class VideoTest(TestCase):
         cls.path = TEST_FILE_PATH
         cls.video = Video(cls.path)
 
-
     def test_video_saves_path(self):
         self.assertIsInstance(self.video._path, pathlib.Path)
         self.assertEqual(self.video._path.__str__(), self.path)
