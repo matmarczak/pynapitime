@@ -19,9 +19,7 @@ class Browser:
                   'queryYear': self.video.year,
                   }
 
-        res = requests.post(self.search_url
-                            , values
-                            )
+        res = requests.post(self.search_url, values)
         assert res.status_code == 200
         soup = BeautifulSoup(res.content, 'html.parser')
         movies = soup.findAll('a', class_='movieTitleCat')
@@ -47,8 +45,11 @@ class Browser:
         movies = self.get_movies_list()
         matched_by_year = [i for i in movies if i['year'] == self.video.year]
         # naive string similarity comparison, needs support for title translation
-        matched_by_year_scores = [self.similarity_score(self.video.title, i['title']) for i in matched_by_year]
-        max_score_idx = matched_by_year_scores.index(max(matched_by_year_scores))
+        matched_by_year_scores = [
+            self.similarity_score(self.video.title, i['title']) for i in
+            matched_by_year]
+        max_score_idx = matched_by_year_scores.index(
+            max(matched_by_year_scores))
         self.movie = matched_by_year[max_score_idx]
         print('Found online movie: %s' % self.movie['title'])
         return self.movie
