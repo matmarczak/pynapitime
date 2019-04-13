@@ -37,7 +37,7 @@ class Video:
 
     def parse_name(self):
         # assume every filename has year which finishes title
-        pat = re.compile(r'(?P<title>.*)(?=(?P<year>\d{4}))')
+        pat = re.compile(r'(?P<title>.*)(?=(?P<year>(19|20|21)\d{2}))')
         match = pat.search(self.path.name)
         title = match.group('title')
         # replace separators with spaces

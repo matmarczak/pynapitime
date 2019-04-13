@@ -2,13 +2,14 @@ import requests
 from bs4 import BeautifulSoup
 import re
 import difflib
-
+from pynapitime.exceptions import MovieNotFound
 
 class Browser:
     def __init__(self, video):
         self.video = video
         self.search_url = 'http://napiprojekt.pl/ajax/search_catalog.php'
         self.root_url = 'http://napiprojekt.pl/'
+        self.use_scores = False
         self.movie = None
         self.subtitles_list = None
 
@@ -23,10 +24,18 @@ class Browser:
         assert res.status_code == 200
         soup = BeautifulSoup(res.content, 'html.parser')
         movies = soup.findAll('a', class_='movieTitleCat')
-        movies_processed = [{'title': x['tytul'],
-                             'href': x['href'],
-                             'year': re.search(r'\d{4}', x.h3.text).group(0)}
-                            for x in movies]
+
+        movies_processed = []
+        for i in movies:
+            try:
+                movie_dict = dict(title=i['tytul'],
+                                  href=i['href'],
+                                  year=re.search(r'\d{4}', i.h3.text).group(0))
+            except AttributeError:
+                "Year is not present on napiprojekt website."
+
+            movies_processed.append(movie_dict)
+
         return movies_processed
 
     @staticmethod
@@ -45,12 +54,19 @@ class Browser:
         movies = self.get_movies_list()
         matched_by_year = [i for i in movies if i['year'] == self.video.year]
         # naive string similarity comparison, needs support for title translation
+        if not matched_by_year:
+            raise MovieNotFound("No movies found for %s[%s]." % (
+                self.video.title,
+                  self.video.year))
         matched_by_year_scores = [
             self.similarity_score(self.video.title, i['title']) for i in
             matched_by_year]
         max_score_idx = matched_by_year_scores.index(
             max(matched_by_year_scores))
-        self.movie = matched_by_year[max_score_idx]
+        if self.use_scores:
+            self.movie = matched_by_year[max_score_idx]
+        else:
+            self.movie = matched_by_year[0]
         print('Found online movie: %s' % self.movie['title'])
         return self.movie
 
@@ -77,7 +93,10 @@ class Browser:
         for i in subtitle_list_html:
             subtitles = i.find_previous('tr')
             duration = subtitles.findAll('td')[3].p.string
-            duration_ms = self.time_to_ms(duration)
+            if duration:
+                duration_ms = self.time_to_ms(duration)
+            else:
+                duration_ms = 0
             row = list(i.parents)[2]
             metadata = row['title']
             try:
