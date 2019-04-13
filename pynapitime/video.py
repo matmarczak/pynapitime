@@ -1,12 +1,12 @@
-from pathlib import Path
-from pymediainfo import MediaInfo
 import re
-from collections import namedtuple
+from pathlib import Path
+
+from pymediainfo import MediaInfo
 
 
 class Video:
     def __init__(self, path):
-        self._path = Path(path)
+        self.path = Path(path)
         self.subtitles_exist = False
         self.duration = None
         self.year = None
@@ -19,15 +19,14 @@ class Video:
         extensions = ['.txt', '.srt']
         for i in extensions:
             # check for filename + ext and filename + its ext + subs ext
-            x = self._path.with_suffix(self._path.suffix + i)
-            if self._path.with_suffix(i).exists() or \
-                    self._path.with_suffix(self._path.suffix + i).exists():
+            if self.path.with_suffix(i).exists() or \
+                    self.path.with_suffix(self.path.suffix + i).exists():
                 self.subtitles_exist = True
                 return True
         return False
 
     def get_track_data(self):
-        mediafile = MediaInfo.parse(self._path)
+        mediafile = MediaInfo.parse(self.path)
         for i in mediafile.tracks:
             if i.track_type == 'Video':
                 video_track = i
@@ -39,7 +38,7 @@ class Video:
     def parse_name(self):
         # assume every filename has year which finishes title
         pat = re.compile(r'(?P<title>.*)(?=(?P<year>\d{4}))')
-        match = pat.search(self._path.name)
+        match = pat.search(self.path.name)
         title = match.group('title')
         # replace separators with spaces
         human_readable_title = re.sub(r'\W', ' ', title)

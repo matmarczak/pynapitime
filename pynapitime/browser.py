@@ -6,11 +6,11 @@ import difflib
 
 class Browser:
     def __init__(self, video):
-        self.subtitles_list = all_subs
         self.video = video
         self.search_url = 'http://napiprojekt.pl/ajax/search_catalog.php'
         self.root_url = 'http://napiprojekt.pl/'
         self.movie = None
+        self.subtitles_list = None
 
     def get_movies_list(self):
         values = {'associate': '',
@@ -53,7 +53,8 @@ class Browser:
         print('Found online movie: %s' % self.movie['title'])
         return self.movie
 
-    def get_pages(self, content, current):
+    @staticmethod
+    def get_pages(content, current):
         pagination = content.findAll('span', class_='pagin')
         pages = [current['href']]
         for i in pagination:
@@ -117,5 +118,6 @@ class Browser:
             i['duration_diff'] = abs(self.video.duration - i['duration'])
         # sort to get best matches first
         all_subs.sort(key=lambda x: x['duration_diff'])
+        self.subtitles_list = all_subs
         print("Found %s versions of subtitles." % len(all_subs))
         return self.subtitles_list

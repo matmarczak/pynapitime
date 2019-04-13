@@ -16,7 +16,7 @@ class TestDownloader(unittest.TestCase):
 
     def test_download_subs(self):
         self.downloader.download_subs()
-        subs_file = self.downloader.video._path.with_suffix('.txt')
+        subs_file = self.downloader.video.path.with_suffix('.txt')
         self.assertTrue(subs_file.exists())
         with subs_file.open('rb') as file:
             contents = file.read()

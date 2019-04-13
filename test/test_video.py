@@ -1,8 +1,8 @@
-from unittest import TestCase
-from pynapitime.video import Video
 import pathlib
+from unittest import TestCase
+
+from pynapitime.video import Video
 from test.config import TEST_FILE_PATH
-import time
 
 
 class VideoTest(TestCase):
@@ -12,11 +12,11 @@ class VideoTest(TestCase):
         cls.video = Video(cls.path)
 
     def test_video_saves_path(self):
-        self.assertIsInstance(self.video._path, pathlib.Path)
-        self.assertEqual(self.video._path.__str__(), self.path)
+        self.assertIsInstance(self.video.path, pathlib.Path)
+        self.assertEqual(self.video.path.__str__(), self.path)
 
     def test_check_for_subs(self):
-        subs_path = self.video._path.with_suffix('.mkv.txt')
+        subs_path = self.video.path.with_suffix('.mkv.txt')
         if subs_path.exists():
             # ensure path is clean
             subs_path.unlink()
@@ -27,7 +27,7 @@ class VideoTest(TestCase):
         with subs_path.open('w') as file:
             file.write('test subs')
 
-        self.assertEqual(subs_path, self.video._path.with_suffix('.mkv.txt'))
+        self.assertEqual(subs_path, self.video.path.with_suffix('.mkv.txt'))
         self.assertTrue(subs_path.exists())
         self.video.check_for_subs()
         self.assertTrue(self.video.subtitles_exist)

@@ -1,7 +1,7 @@
-import requests
-import sys
 import base64
 import re
+
+import requests
 
 
 class Downloader:
@@ -18,14 +18,14 @@ class Downloader:
             "mode": "1",
             "client": "NapiProjektPython",
             "client_ver": "0.1",
-            "downloaded_subtitles_id": self.movie_hash,
+            "downloaded_subtitles_id": subs_hash,
             "downloaded_subtitles_txt": "1",
             "downloaded_subtitles_lang": "PL"
         }
         res = requests.post(self.url, data=values)
         match = re.search(rb'DATA\[(?P<subs>.*)\]', res.content).group('subs')
         decoded = base64.b64decode(match)
-        subs_file = self.video._path.with_suffix('.txt')
+        subs_file = self.video.path.with_suffix('.txt')
         subs_file.touch()
         with subs_file.open('wb') as file:
             file.write(decoded)
