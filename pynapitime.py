@@ -2,7 +2,7 @@ from pynapitime.video import Video
 from pynapitime.browser import Browser
 from pynapitime.downloader import Downloader
 from pynapitime.explorer import Explorer
-from pynapitime.exceptions import MovieNotFound
+from pynapitime.exceptions import MovieNotFound, SubtitlesNotFound
 
 from argparse import ArgumentParser
 from pathlib import Path
@@ -32,6 +32,10 @@ def handle_file(path):
         except MovieNotFound as e:
             print(str(e))
             return None
+        except SubtitlesNotFound as e:
+            print(str(e))
+            return None
+
         chosen_subs = subtitles[args.match]
         print('Choosed %s best match which differ from your video %s ms.' % (
             args.match + 1, chosen_subs['duration_diff']))
