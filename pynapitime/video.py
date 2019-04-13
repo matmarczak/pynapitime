@@ -45,14 +45,13 @@ class Video:
         human_readable_title = re.sub(r'\W', ' ', title)
         self.title = human_readable_title
         self.year = match.group('year')
+        print("Title and year from parsed filename are:")
+        print("%s[%s]" %(self.title, self.year))
         return None
 
-    def gather_movie_data(self):
-        if self.check_for_subs():
-            print('Subtitles already exist.')
-            return None
-        else:
-            self.get_track_data()
-            self.parse_name()
+    def collect_movie_data(self):
+        self.get_track_data()
+        self.parse_name()
+
 
 

@@ -49,6 +49,7 @@ class Browser:
         matched_by_year_scores = [self.similarity_score(self.video.title, i['title']) for i in matched_by_year]
         max_score_idx = matched_by_year_scores.index(max(matched_by_year_scores))
         self.movie = matched_by_year[max_score_idx]
+        print('Found online movie: %s' % self.movie['title'])
         return self.movie
 
     def get_pages(self, content, current):
@@ -107,6 +108,7 @@ class Browser:
         # page is already cached
         subs_page_1 = self.get_page_subs(movie_page)
         all_subs = subs_page_1
+        print('There are %s pages with subtitles.' % len(pages))
 
         for i in pages[1:]:
             all_subs += self.get_page_subs(movie_page)
@@ -116,5 +118,6 @@ class Browser:
         # sort to get best matches first
         all_subs.sort(key=lambda x: x['duration_diff'])
         self.subtitles_list = all_subs
+        print("Found %s versions of subtitles." % len(all_subs))
         return self.subtitles_list
 

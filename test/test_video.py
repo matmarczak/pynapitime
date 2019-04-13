@@ -43,7 +43,7 @@ class VideoTest(TestCase):
         self.assertTrue(self.video.year)
 
     def test_gather_data(self):
-        self.video.gather_movie_data()
+        self.video.collect_movie_data()
         self.assertTrue(self.video.duration)
         self.assertTrue(self.video.frame_rate)
         self.assertTrue(self.video.title)

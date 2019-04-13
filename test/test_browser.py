@@ -9,7 +9,7 @@ class TestBrowser(TestCase):
     @classmethod
     def setUpClass(cls):
         cls.video = Video(TEST_FILE_PATH)
-        cls.video.gather_movie_data()
+        cls.video.collect_movie_data()
         cls.browser = Browser(cls.video)
 
     def test_movie_list(self):
