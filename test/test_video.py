@@ -4,6 +4,7 @@ import pathlib
 from test.config import TEST_FILE_PATH
 import time
 
+
 class VideoTest(TestCase):
     @classmethod
     def setUpClass(cls):
@@ -17,7 +18,7 @@ class VideoTest(TestCase):
     def test_check_for_subs(self):
         subs_path = self.video._path.with_suffix('.mkv.txt')
         if subs_path.exists():
-            #ensure path is clean
+            # ensure path is clean
             subs_path.unlink()
         self.video.check_for_subs()
         self.assertFalse(self.video.subtitles_exist)
@@ -33,7 +34,6 @@ class VideoTest(TestCase):
         subs_path.unlink()
 
     def test_get_track_data(self):
-        duration = self.video.get_track_data()
         self.assertTrue(self.video.duration)
         self.assertTrue(self.video.frame_rate)
 
@@ -48,6 +48,3 @@ class VideoTest(TestCase):
         self.assertTrue(self.video.frame_rate)
         self.assertTrue(self.video.title)
         self.assertTrue(self.video.year)
-
-
-

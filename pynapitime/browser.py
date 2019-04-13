@@ -6,6 +6,7 @@ import difflib
 
 class Browser:
     def __init__(self, video):
+        self.subtitles_list = all_subs
         self.video = video
         self.search_url = 'http://napiprojekt.pl/ajax/search_catalog.php'
         self.root_url = 'http://napiprojekt.pl/'
@@ -19,15 +20,15 @@ class Browser:
                   }
 
         res = requests.post(self.search_url
-                            ,values
+                            , values
                             )
         assert res.status_code == 200
         soup = BeautifulSoup(res.content, 'html.parser')
         movies = soup.findAll('a', class_='movieTitleCat')
         movies_processed = [{'title': x['tytul'],
-                              'href': x['href'],
-                              'year': re.search(r'\d{4}', x.h3.text).group(0)}
-                                for x in movies]
+                             'href': x['href'],
+                             'year': re.search(r'\d{4}', x.h3.text).group(0)}
+                            for x in movies]
         return movies_processed
 
     @staticmethod
@@ -44,8 +45,8 @@ class Browser:
 
     def find_movie(self):
         movies = self.get_movies_list()
-        matched_by_year = [i for i in movies if i['year']==self.video.year]
-        #naive string similarity comparison, needs support for title translation
+        matched_by_year = [i for i in movies if i['year'] == self.video.year]
+        # naive string similarity comparison, needs support for title translation
         matched_by_year_scores = [self.similarity_score(self.video.title, i['title']) for i in matched_by_year]
         max_score_idx = matched_by_year_scores.index(max(matched_by_year_scores))
         self.movie = matched_by_year[max_score_idx]
@@ -60,7 +61,7 @@ class Browser:
                 pages.append(i.parent['href'])
         return pages
 
-    def get_page_subs(self,page):
+    def get_page_subs(self, page):
         subtitles_list = []
         if isinstance(page, BeautifulSoup):
             pass
@@ -89,9 +90,8 @@ class Browser:
 
         return subtitles_list
 
-
     def get_subtitles_list(self):
-        #todo cleanup variable names
+        # todo cleanup variable names
         self.find_movie()
         movie_url = self.root_url + self.movie['href']
         res_movie = requests.post(movie_url)
@@ -102,9 +102,9 @@ class Browser:
         proxy_page_url = self.root_url + proxy_page_url_landing['href']
         # get first subtitles page
         movie_page_res = requests.get(proxy_page_url)
-        assert movie_page_res .status_code == 200
+        assert movie_page_res.status_code == 200
         movie_page = BeautifulSoup(movie_page_res.content, 'html.parser')
-        pages = self.get_pages(movie_page,proxy_page_url_landing)
+        pages = self.get_pages(movie_page, proxy_page_url_landing)
         # page is already cached
         subs_page_1 = self.get_page_subs(movie_page)
         all_subs = subs_page_1
@@ -114,10 +114,8 @@ class Browser:
             all_subs += self.get_page_subs(movie_page)
 
         for i in all_subs:
-            i['duration_diff'] = abs(self.video.duration-i['duration'])
+            i['duration_diff'] = abs(self.video.duration - i['duration'])
         # sort to get best matches first
         all_subs.sort(key=lambda x: x['duration_diff'])
-        self.subtitles_list = all_subs
         print("Found %s versions of subtitles." % len(all_subs))
         return self.subtitles_list
-

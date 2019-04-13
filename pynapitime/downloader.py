@@ -3,13 +3,14 @@ import sys
 import base64
 import re
 
+
 class Downloader:
     def __init__(self, video, movie_hash):
         self.video = video
         self.url = "http://napiprojekt.pl/api/api-napiprojekt3.php"
         self.movie_hash = movie_hash
 
-    def download_subs(self,subs_hash=None):
+    def download_subs(self, subs_hash=None):
         if not subs_hash:
             subs_hash = self.movie_hash
 
@@ -28,4 +29,3 @@ class Downloader:
         subs_file.touch()
         with subs_file.open('wb') as file:
             file.write(decoded)
-

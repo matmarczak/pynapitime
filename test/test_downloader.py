@@ -20,5 +20,5 @@ class TestDownloader(unittest.TestCase):
         self.assertTrue(subs_file.exists())
         with subs_file.open('rb') as file:
             contents = file.read()
-        self.assertTrue(len(contents)>100)
+        self.assertTrue(len(contents) > 100)
         subs_file.unlink()

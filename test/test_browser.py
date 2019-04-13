@@ -23,4 +23,4 @@ class TestBrowser(TestCase):
 
     def test_get_subtitles_list(self):
         subs_list = self.browser.get_subtitles_list()
-        self.assertTrue(len(subs_list)>0)
+        self.assertTrue(len(subs_list) > 0)
