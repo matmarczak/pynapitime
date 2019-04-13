@@ -18,7 +18,7 @@ if __name__ == "__main__":
 
     video = Video(args.path)
     video.collect_movie_data()
-    if video.check_for_subs() and not args.overwrite:
+    if video.subs_exist() and not args.overwrite:
         print(
             "Subtitles already exist. If you want to download anyway pass -o flag.")
     else:

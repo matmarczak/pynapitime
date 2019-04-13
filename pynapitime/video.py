@@ -13,7 +13,7 @@ class Video:
         self.title = None
         self.frame_rate = None
 
-    def check_for_subs(self):
+    def subs_exist(self):
         """Checks is subtitles exists in directory.
         """
         extensions = ['.txt', '.srt']

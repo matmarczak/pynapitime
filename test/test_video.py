@@ -20,7 +20,7 @@ class VideoTest(TestCase):
         if subs_path.exists():
             # ensure path is clean
             subs_path.unlink()
-        self.video.check_for_subs()
+        self.video.subs_exist()
         self.assertFalse(self.video.subtitles_exist)
 
         subs_path.touch()
@@ -29,7 +29,7 @@ class VideoTest(TestCase):
 
         self.assertEqual(subs_path, self.video.path.with_suffix('.mkv.txt'))
         self.assertTrue(subs_path.exists())
-        self.video.check_for_subs()
+        self.video.subs_exist()
         self.assertTrue(self.video.subtitles_exist)
         subs_path.unlink()
 
