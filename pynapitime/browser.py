@@ -2,7 +2,8 @@ import requests
 from bs4 import BeautifulSoup
 import re
 import difflib
-from pynapitime.exceptions import MovieNotFound, SubtitlesNotFound
+from pynapitime.exceptions import PyNapiTimeException
+
 
 class Browser:
     def __init__(self, video):
@@ -55,7 +56,7 @@ class Browser:
         matched_by_year = [i for i in movies if i['year'] == self.video.year]
         # naive string similarity comparison, needs support for title translation
         if not matched_by_year:
-            raise MovieNotFound("No movies found for %s[%s]." % (
+            raise PyNapiTimeException("No movies found for %s[%s]." % (
                 self.video.title,
                   self.video.year))
         matched_by_year_scores = [
@@ -139,7 +140,7 @@ class Browser:
         # sort to get best matches first
         all_subs.sort(key=lambda x: x['duration_diff'])
         if not all_subs:
-            raise SubtitlesNotFound('No subtitles found for movie %s[%s].'
+            raise PyNapiTimeException('No subtitles found for movie %s[%s].'
                                      %(self.video.title,self.video.year))
         self.subtitles_list = all_subs
         print("Found %s versions of subtitles." % len(all_subs))

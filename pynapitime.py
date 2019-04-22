@@ -2,7 +2,7 @@ from pynapitime.video import Video
 from pynapitime.browser import Browser
 from pynapitime.downloader import Downloader
 from pynapitime.explorer import Explorer
-from pynapitime.exceptions import MovieNotFound, SubtitlesNotFound
+from pynapitime.exceptions import PyNapiTimeException
 
 from argparse import ArgumentParser
 from pathlib import Path
@@ -12,10 +12,11 @@ parser = ArgumentParser(
     usage="download subtitles from napiprojekt based on movie duration")
 parser.add_argument('path', type=str, help="path to video file")
 parser.add_argument('-o', '--overwrite',
-                    help="if subtitles exist script would overwrite",
+                    help="if subtitles exist, script would overwrite",
                     action="store_true")
 parser.add_argument('-m', '--match',
-                    help="specify number of subtitles sorted by duration diff, default 0 (best match)",
+                    help="specify index of subtitles sorted by duration diff, "
+                         "default 0 (best match)",
                     action="store", type=int, default=0)
 args = parser.parse_args()
 
@@ -29,10 +30,7 @@ def handle_file(path):
         browser = Browser(video)
         try:
             subtitles = browser.get_subtitles_list()
-        except MovieNotFound as e:
-            print(str(e))
-            return None
-        except SubtitlesNotFound as e:
+        except PyNapiTimeException as e:
             print(str(e))
             return None
 
