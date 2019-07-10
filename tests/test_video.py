@@ -4,13 +4,22 @@ from unittest import TestCase, mock
 
 from pynapitime.video import Video
 
+def file_mocker(func):
+    video_track_mock = mock.Mock()
+    video_track_mock.duration.side_effect = 123
+    video_track_mock.frame_rate.side_effect = '24'
+    @mock.patch('pynapitime.video.Video._extract_video_track', video_track_mock)
+    def decorate_function(cls):
+        return func(cls)
+    return decorate_function
 
 class VideoTest(TestCase):
     @classmethod
     def setUpClass(cls):
         cls.tempdir = tempfile.TemporaryDirectory()
         cls.path = cls.tempdir
-        cls.video = Video(cls.path.name + '.mkv ')
+        cls.temp_movie = pathlib.Path(cls.path.name) / "Jumanji.Welcome.to.the.Jungle.2017.480p.BluRay.x264.mkv"
+        cls.video = Video(cls.temp_movie)
 
     @classmethod
     def tearDownClass(cls):
@@ -18,7 +27,7 @@ class VideoTest(TestCase):
 
     def test_video_saves_path(self):
         self.assertIsInstance(self.video.path, pathlib.Path)
-        self.assertEqual(self.video.path.__str__(), self.path)
+        self.assertEqual(self.video.path.__str__(), str(self.temp_movie))
 
     def test_check_for_subs_doesnt_exists(self):
         subs_path = self.video.path.with_suffix('.mkv.txt')
@@ -38,21 +47,18 @@ class VideoTest(TestCase):
         self.video.subs_exist()
         self.assertTrue(self.video.subtitles_exist)
 
+    @file_mocker
     def test_get_track_data(self):
-        mediainfo_mock = mock.Mock()
-        mocked_mediafile = mock.Mock()
-        mocked_mediafile.tracks.side_effect = [123]
-        mediainfo_mock.parse.side_effect = mocked_mediafile
-        with mock.patch('pynapitime.video.MediaInfo', mediainfo_mock):
             self.video.get_track_data()
             self.assertTrue(self.video.duration)
             self.assertTrue(self.video.frame_rate)
 
     def test_get_name(self):
         self.video.parse_name()
-        self.assertTrue(self.video.title)
-        self.assertTrue(self.video.year)
+        self.assertEqual(self.video.title, 'Jumanji Welcome to the Jungle')
+        self.assertEqual(self.video.year, 2017)
 
+    @file_mocker
     def test_gather_data(self):
         self.video.collect_movie_data()
         self.assertTrue(self.video.duration)
