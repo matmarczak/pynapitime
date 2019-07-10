@@ -1,7 +1,7 @@
 from unittest import TestCase
 from pynapitime.video import Video
 from pynapitime.browser import Browser
-from test.config import TEST_FILE_PATH
+from tests.config import TEST_FILE_PATH
 
 
 class TestBrowser(TestCase):

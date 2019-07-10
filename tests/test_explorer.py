@@ -1,7 +1,7 @@
 from unittest import TestCase
 from pathlib import Path
 from pynapitime.explorer import Explorer
-from test import config
+from tests import config
 
 
 class TestExplorer(TestCase):

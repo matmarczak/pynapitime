@@ -14,8 +14,7 @@ class Video:
         self.frame_rate = None
 
     def subs_exist(self):
-        """Checks is subtitles exists in directory.
-        """
+        """Checks is subtitles exists in directory."""
         extensions = ['.txt', '.srt']
         for i in extensions:
             # check for filename + ext and filename + its ext + subs ext
