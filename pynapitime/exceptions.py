@@ -4,10 +4,10 @@ class PyNapiTimeException(Exception):
 
 
 class MovieNotFound(Exception):
-    """Exception if video wasnt found in subtitle database.
+    """Exception if video wasn't found in database.
     """
 
 
 class SubtitlesNotFound(Exception):
-    """Exception if video wasnt found in subtitle database.
+    """Exception if subtitles were not found in subtitle database.
     """

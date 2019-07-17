@@ -53,9 +53,13 @@ class Browser:
 
     def find_movie(self):
         movies = self.get_movies_list()
-        matched_by_year = [i for i in movies if i['year'] == self.video.year]
+        matched_by_year = [i for i in movies
+                           if int(i['year']) == self.video.year]
         # naive string similarity comparison, needs support for title translation
         if not matched_by_year:
+            if self.video.title is None or self.video.year is None:
+                raise ValueError("Please add movie metadata or change "
+                                 "filename!")
             raise PyNapiTimeException("No movies found for %s[%s]." % (
                 self.video.title,
                   self.video.year))
