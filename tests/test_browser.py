@@ -1,15 +1,18 @@
 from unittest import TestCase
 from pynapitime.video import Video
 from pynapitime.browser import Browser
-from test.config import TEST_FILE_PATH
+import tempfile
+import pathlib
 
 
 class TestBrowser(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.video = Video(TEST_FILE_PATH)
-        cls.video.collect_movie_data()
+        cls.tempdir = tempfile.TemporaryDirectory()
+        cls.path = cls.tempdir
+        cls.temp_movie = pathlib.Path(cls.path.name) / "Jumanji.Welcome.to.the.Jungle.2017.480p.BluRay.x264.mkv"
+        cls.video = Video(cls.temp_movie)
         cls.browser = Browser(cls.video)
 
     def test_movie_list(self):

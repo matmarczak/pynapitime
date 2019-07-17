@@ -14,8 +14,7 @@ class Video:
         self.frame_rate = None
 
     def subs_exist(self):
-        """Checks is subtitles exists in directory.
-        """
+        """Checks is subtitles exists in directory."""
         extensions = ['.txt', '.srt']
         for i in extensions:
             # check for filename + ext and filename + its ext + subs ext
@@ -25,12 +24,17 @@ class Video:
                 return True
         return False
 
-    def get_track_data(self):
-        mediafile = MediaInfo.parse(self.path)
+    @staticmethod
+    def _extract_video_track(path):
+        mediafile = MediaInfo.parse(path)
         for i in mediafile.tracks:
             if i.track_type == 'Video':
                 video_track = i
                 break
+        return video_track
+
+    def get_track_data(self):
+        video_track = self._extract_video_track(self.path)
         self.duration = video_track.duration
         self.frame_rate = video_track.frame_rate
         return None
@@ -42,8 +46,8 @@ class Video:
         title = match.group('title')
         # replace separators with spaces
         human_readable_title = re.sub(r'\W', ' ', title)
-        self.title = human_readable_title
-        self.year = match.group('year')
+        self.title = human_readable_title.strip()
+        self.year = int(match.group('year'))
         print("Title and year from filename are:")
         print("%s[%s]" % (self.title, self.year))
         return None
