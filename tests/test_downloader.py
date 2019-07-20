@@ -1,7 +1,7 @@
 import tempfile
 import unittest
 import pathlib
-from pynapitime.downloader import download_subs
+from utils.downloader import download_subs
 
 
 class TestDownloader(unittest.TestCase):

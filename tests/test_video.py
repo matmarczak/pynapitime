@@ -2,13 +2,13 @@ import pathlib
 import tempfile
 from unittest import TestCase, mock
 
-from pynapitime.video import Video
+from utils.video import Video
 
 def file_mocker(func):
     video_track_mock = mock.Mock()
     video_track_mock.duration.side_effect = 123
     video_track_mock.frame_rate.side_effect = '24'
-    @mock.patch('pynapitime.video.Video._extract_video_track', video_track_mock)
+    @mock.patch('utils.video.Video._extract_video_track', video_track_mock)
     def decorate_function(cls):
         return func(cls)
     return decorate_function

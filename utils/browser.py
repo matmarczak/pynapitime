@@ -2,7 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 import re
 import difflib
-from pynapitime.exceptions import PyNapiTimeException
+from utils.exceptions import PyNapiTimeException
 
 
 class Browser:

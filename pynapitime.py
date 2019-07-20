@@ -1,8 +1,8 @@
-from pynapitime.video import Video
-from pynapitime.browser import Browser
-from pynapitime.downloader import Downloader
-from pynapitime.explorer import Explorer
-from pynapitime.exceptions import PyNapiTimeException
+from utils.video import Video
+from utils.browser import Browser
+from utils.downloader import download_subs
+from utils.explorer import Explorer
+from utils.exceptions import PyNapiTimeException
 
 from argparse import ArgumentParser
 from pathlib import Path
@@ -32,14 +32,15 @@ def handle_file(path):
             subtitles = browser.get_subtitles_list()
         except PyNapiTimeException as e:
             print(str(e))
-            return None
+            return
 
         chosen_subs = subtitles[args.match]
-        print('Choosed %s best match which differ from your video %s ms.' % (
+        print('Choosed %s best match, which differs from video %s ms.' % (
             args.match + 1, chosen_subs['duration_diff']))
-        downloader = Downloader(video, chosen_subs['hash'])
+        downloader = download_subs(video, chosen_subs['hash'])
         downloader.download_subs()
-        return None
+        print('Subtitles saved in {}'.format())
+        return
 
 if __name__ == "__main__":
         if Path(args.path).is_file():

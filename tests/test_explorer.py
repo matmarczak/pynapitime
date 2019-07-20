@@ -1,6 +1,6 @@
 from unittest import TestCase
 from pathlib import Path
-from pynapitime.explorer import Explorer
+from utils.explorer import Explorer
 from tests import config
 
 

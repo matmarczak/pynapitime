@@ -1,6 +1,6 @@
 from unittest import TestCase, mock
-from pynapitime.video import Video
-from pynapitime.browser import Browser
+from utils.video import Video
+from utils.browser import Browser
 import tempfile
 import pathlib
 import shutil

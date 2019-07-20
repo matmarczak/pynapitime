@@ -1,5 +1,5 @@
 from pathlib import Path
-from pynapitime.video import Video
+from utils.video import Video
 
 
 class Explorer:
