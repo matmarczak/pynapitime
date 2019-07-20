@@ -1,7 +1,7 @@
 import pathlib
 import tempfile
 from unittest import TestCase, mock
-
+from .factories import movie_file
 from utils.video import Video
 
 def file_mocker(func):
@@ -16,14 +16,8 @@ def file_mocker(func):
 class VideoTest(TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.tempdir = tempfile.TemporaryDirectory()
-        cls.path = cls.tempdir
-        cls.temp_movie = pathlib.Path(cls.path.name) / "Jumanji.Welcome.to.the.Jungle.2017.480p.BluRay.x264.mkv"
+        cls.temp_movie = movie_file()
         cls.video = Video(cls.temp_movie)
-
-    @classmethod
-    def tearDownClass(cls):
-        cls.tempdir.cleanup()
 
     def test_video_saves_path(self):
         self.assertIsInstance(self.video.path, pathlib.Path)

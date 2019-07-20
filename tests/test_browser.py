@@ -1,18 +1,14 @@
-from unittest import TestCase, mock
+from unittest import TestCase
 from utils.video import Video
 from utils.browser import Browser
-import tempfile
-import pathlib
-import shutil
+from .factories import movie_file
 from .test_video import file_mocker
 
 class TestBrowser(TestCase):
 
     @classmethod
     def setUp(cls):
-        cls.tempdir = tempfile.TemporaryDirectory()
-        cls.path = cls.tempdir
-        cls.temp_movie = pathlib.Path(cls.path.name) / "Jumanji.Welcome.to.the.Jungle.2017.480p.BluRay.x264.mkv"
+        cls.temp_movie = movie_file()
         cls.video = Video(cls.temp_movie)
         cls.video.parse_name()
         cls.video.duration = 7143143

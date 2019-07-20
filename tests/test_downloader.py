@@ -2,7 +2,7 @@ import tempfile
 import unittest
 import pathlib
 from utils.downloader import download_subs
-
+from .factories import movie_file
 
 class TestDownloader(unittest.TestCase):
     test_hashes = ['34e51a07ab99cec163136ae1998363a6',
@@ -11,9 +11,7 @@ class TestDownloader(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.tempdir = tempfile.TemporaryDirectory()
-        cls.path = cls.tempdir
-        cls.temp_movie = pathlib.Path(cls.path.name) / "Jumanji.Welcome.to.the.Jungle.2017.480p.BluRay.x264.mkv"
+        cls.temp_movie = movie_file()
         cls.temp_movie.touch()
 
     def test_download_subs(self):
