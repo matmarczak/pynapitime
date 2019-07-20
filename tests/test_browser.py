@@ -3,13 +3,13 @@ from pynapitime.video import Video
 from pynapitime.browser import Browser
 import tempfile
 import pathlib
-
+import shutil
 from .test_video import file_mocker
 
 class TestBrowser(TestCase):
 
     @classmethod
-    def setUpClass(cls):
+    def setUp(cls):
         cls.tempdir = tempfile.TemporaryDirectory()
         cls.path = cls.tempdir
         cls.temp_movie = pathlib.Path(cls.path.name) / "Jumanji.Welcome.to.the.Jungle.2017.480p.BluRay.x264.mkv"
