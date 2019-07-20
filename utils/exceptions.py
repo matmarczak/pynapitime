@@ -1,13 +1,16 @@
 class PyNapiTimeException(Exception):
-    """Common excpetion for diffrent cases
+    """Common excpetion for different cases
     """
 
 
-class MovieNotFound(Exception):
+class MovieNotFound(PyNapiTimeException):
     """Exception if video wasn't found in database.
     """
 
 
-class SubtitlesNotFound(Exception):
+class SubtitlesNotFound(PyNapiTimeException):
     """Exception if subtitles were not found in subtitle database.
     """
+
+class BadFile(PyNapiTimeException):
+    """Exception if file is malformed or not supported."""

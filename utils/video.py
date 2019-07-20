@@ -1,6 +1,6 @@
 import re
 from pathlib import Path
-
+from .exceptions import BadFile
 from pymediainfo import MediaInfo
 
 
@@ -34,7 +34,11 @@ class Video:
         return video_track
 
     def get_track_data(self):
-        video_track = self._extract_video_track(self.path)
+        try:
+            video_track = self._extract_video_track(self.path)
+        except UnboundLocalError:
+            raise BadFile("File doesn't contain video_track!")
+
         self.duration = video_track.duration
         self.frame_rate = video_track.frame_rate
         return None
