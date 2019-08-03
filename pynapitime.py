@@ -9,13 +9,11 @@ from pathlib import Path
 import sys
 
 
-
 def handle_file(path):
     video = Video(path)
     video.collect_movie_data()
     if video.subs_exist() and not args.overwrite:
-        print(
-            "Subtitles already exist. If you want to download anyway pass -o flag.")
+        print("Subtitles already exist. If you want to download anyway pass -o flag.")
     else:
         browser = Browser(video)
         try:
@@ -25,24 +23,36 @@ def handle_file(path):
             return
 
         chosen_subs = subtitles[args.match]
-        print('Choosed %s best match, which differs from video %s ms.' % (
-            args.match + 1, chosen_subs['duration_diff']))
-        downloader = download_subs(video, chosen_subs['hash'])
+        print(
+            "Choosed %s best match, which differs from video %s ms."
+            % (args.match + 1, chosen_subs["duration_diff"])
+        )
+        downloader = download_subs(video, chosen_subs["hash"])
         downloader.download_subs()
-        print('Subtitles saved in {}'.format())
+        print("Subtitles saved in {}".format())
         return
+
 
 def main(args):
     parser = ArgumentParser(
-        usage="download subtitles from napiprojekt based on movie duration")
-    parser.add_argument('path', type=str, help="path to video file")
-    parser.add_argument('-o', '--overwrite',
-                        help="if subtitles exist, script would overwrite",
-                        action="store_true")
-    parser.add_argument('-m', '--match',
-                        help="specify index of subtitles sorted by duration diff, "
-                             "default 0 (best match)",
-                        action="store", type=int, default=0)
+        usage="download subtitles from napiprojekt based on movie duration"
+    )
+    parser.add_argument("path", type=str, help="path to video file")
+    parser.add_argument(
+        "-o",
+        "--overwrite",
+        help="if subtitles exist, script would overwrite",
+        action="store_true",
+    )
+    parser.add_argument(
+        "-m",
+        "--match",
+        help="specify index of subtitles sorted by duration diff, "
+        "default 0 (best match)",
+        action="store",
+        type=int,
+        default=0,
+    )
     args = parser.parse_args(args)
 
     if Path(args.path).is_file():
@@ -56,7 +66,3 @@ def main(args):
 
 if __name__ == "__main__":
     main(sys.argv[1:])
-
-
-
-

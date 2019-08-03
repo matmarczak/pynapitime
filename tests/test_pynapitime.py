@@ -5,6 +5,7 @@ from unittest.mock import patch, Mock
 from utils.exceptions import BadFile
 from tests.test_video import file_mocker
 
+
 class TestPynapitime(unittest.TestCase):
     @classmethod
     def setUp(cls):
@@ -20,7 +21,7 @@ class TestPynapitime(unittest.TestCase):
         # TODO
         # Mocks video duration to allow program handling movie subtitiles
         # from Browser, read about unittest.mock to mock duration of video
-        with patch('utils.video.Video') as mock:
+        with patch("utils.video.Video") as mock:
             duration = Mock()
             duration.side_effect = 123
             mock.duration = duration

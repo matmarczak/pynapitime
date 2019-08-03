@@ -3,7 +3,8 @@ import pathlib
 
 TEST_MOVIE = "Jumanji.Welcome.to.the.Jungle.2017.480p.BluRay.x264.mkv"
 
-class movie_file():
+
+class movie_file:
     """Dirty hack to pass weakref from TemporaryDirectory and stay DRY."""
 
     def __new__(cls):

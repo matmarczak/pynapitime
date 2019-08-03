@@ -4,8 +4,8 @@ from utils.browser import Browser
 from .factories import movie_file
 from .test_video import file_mocker
 
-class TestBrowser(TestCase):
 
+class TestBrowser(TestCase):
     @classmethod
     def setUp(cls):
         cls.temp_movie = movie_file()
@@ -23,9 +23,9 @@ class TestBrowser(TestCase):
         self.video.collect_movie_data()
         movie = self.browser.find_movie()
         self.assertIsInstance(movie, dict)
-        self.assertTrue(movie['title'])
+        self.assertTrue(movie["title"])
 
     @file_mocker
     def test_get_subtitles_list(self):
-            subs_list = self.browser.get_subtitles_list()
-            self.assertTrue(len(subs_list) > 0)
+        subs_list = self.browser.get_subtitles_list()
+        self.assertTrue(len(subs_list) > 0)
