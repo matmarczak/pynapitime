@@ -1,21 +1,8 @@
 import pathlib
 import tempfile
 from unittest import TestCase, mock
-from .factories import movie_file, TEST_MOVIES
+from .factories import movie_file, file_mocker, TEST_MOVIES
 from utils.video import Video
-
-
-def file_mocker(func):
-    video_track_mock = mock.Mock(duration=2134, frame_rate='24')
-
-    return_mock = mock.Mock()
-    return_mock.return_value = video_track_mock
-
-    @mock.patch("utils.video.Video._extract_video_track", return_mock)
-    def decorate_function(cls):
-        return func(cls)
-
-    return decorate_function
 
 
 class VideoTest:
@@ -52,19 +39,38 @@ class VideoTest:
         self.assertIsInstance(self.video.duration, int)
         self.assertIsInstance(self.video.frame_rate, str)
 
+    @file_mocker
+    def test_results_tupes(self):
+        self.video.collect_movie_data()
+        self.assertIsInstance(self.video.duration, int)
+        self.assertIsInstance(self.video.frame_rate, str)
+        self.assertIsInstance(self.video.title, str)
+        self.assertIsInstance(self.video.year, (int, type(None)))
+
+
+class TestVideo_1(VideoTest, TestCase):
+    test_movie_file = TEST_MOVIES[0]
     def test_get_name(self):
         self.video.parse_name()
-        self.assertEqual(self.video.title, "Jumanji Welcome to the Jungle")
+        self.assertEqual(self.video.title, "Jumanji Welcome to the Jungle 2017 480p")
         self.assertEqual(self.video.year, 2017)
 
     @file_mocker
     def test_gather_data(self):
         self.video.collect_movie_data()
-        self.assertTrue(self.video.duration)
-        self.assertTrue(self.video.frame_rate)
-        self.assertTrue(self.video.title)
-        self.assertTrue(self.video.year)
+        self.assertEqual(self.video.duration, 2134)
+        self.assertEqual(self.video.frame_rate, "24")
 
-# allows parametrizing test cases in unittest
-for idx, i in enumerate(TEST_MOVIES):
-    globals()['TestVideo{}'.format(idx)] = type('VideoTest', (VideoTest, TestCase), {'test_movie_file':TEST_MOVIES[idx]})
+
+class TestVideo_2(VideoTest, TestCase):
+    test_movie_file = TEST_MOVIES[1]
+    def test_get_name(self):
+        self.video.parse_name()
+        self.assertEqual(self.video.title, "Jumanji Welcome to the Jungle 480p")
+        self.assertEqual(self.video.year, None)
+
+    @file_mocker
+    def test_gather_data(self):
+        self.video.collect_movie_data()
+        self.assertEqual(self.video.duration, 2134)
+        self.assertEqual(self.video.frame_rate, "24")

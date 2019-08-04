@@ -30,6 +30,8 @@ class Video:
     def _extract_video_track(path):
         try:
             mediafile = MediaInfo.parse(path)
+        except FileNotFoundError:
+            raise
         except OSError:
             raise OSError("Mediainfo should be installed on system.")
         for i in mediafile.tracks:
@@ -48,18 +50,31 @@ class Video:
         self.frame_rate = video_track.frame_rate
         return None
 
-    def parse_name(self):
-        # assume every filename has year which finishes title
-        pat = re.compile(r"(?P<title>.*)(?=(?P<year>(19|20|21)\d{2}))")
+    def extract(self, regex):
+        pat = re.compile(regex)
         match = pat.search(self.path.name)
-        title = match.group("title")
-        # replace separators with spaces
-        human_readable_title = re.sub(r"\W", " ", title)
-        self.title = human_readable_title.strip()
-        self.year = int(match.group("year"))
+        if match:
+            return match.group()
+        return
+
+
+    def extract_year(self):
+        filename_movie_year = self.extract(r"(?P<year>(19|20|21)\d{2})")
+        if filename_movie_year :
+            return int(filename_movie_year)
+        return
+
+    def extrack_title(self):
+        filename_movie_title = self.extract(r"(?P<title>.*)(p.)")
+        human_readable_title = re.sub(r"\W", " ", filename_movie_title)
+        title = human_readable_title.strip()
+        return title
+
+    def parse_name(self):
+        self.title = self.extrack_title()
+        self.year = self.extract_year()
         print("Title and year from filename are:")
         print("%s[%s]" % (self.title, self.year))
-        return None
 
     def collect_movie_data(self):
         self.get_track_data()

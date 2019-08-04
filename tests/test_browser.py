@@ -1,14 +1,14 @@
 from unittest import TestCase
 from utils.video import Video
 from utils.browser import Browser
-from .factories import movie_file
-from .test_video import file_mocker
+from .factories import movie_file, file_mocker, TEST_MOVIES
 
 
-class TestBrowser(TestCase):
+class TestBrowser:
+
     @classmethod
     def setUp(cls):
-        cls.temp_movie = movie_file()
+        cls.temp_movie = movie_file(cls.test_movie_file)
         cls.video = Video(cls.temp_movie)
         cls.video.parse_name()
         cls.video.duration = 7143143
@@ -29,3 +29,10 @@ class TestBrowser(TestCase):
     def test_get_subtitles_list(self):
         subs_list = self.browser.get_subtitles_list()
         self.assertTrue(len(subs_list) > 0)
+
+
+for idx, i in enumerate(TEST_MOVIES):
+    class_name = 'TestBrowser_{}'.format(idx)
+    globals()[class_name] = type(class_name, (TestBrowser, TestCase), {'test_movie_file':i})
+
+
