@@ -52,7 +52,7 @@ class TestVideo_1(VideoTest, TestCase):
     test_movie_file = TEST_MOVIES[0]
     def test_get_name(self):
         self.video.parse_name()
-        self.assertEqual(self.video.title, "Jumanji Welcome to the Jungle 2017 480p")
+        self.assertEqual(self.video.title, "Jumanji Welcome to the Jungle")
         self.assertEqual(self.video.year, 2017)
 
     @file_mocker
@@ -66,7 +66,7 @@ class TestVideo_2(VideoTest, TestCase):
     test_movie_file = TEST_MOVIES[1]
     def test_get_name(self):
         self.video.parse_name()
-        self.assertEqual(self.video.title, "Jumanji Welcome to the Jungle 480p")
+        self.assertEqual(self.video.title, "Jumanji Welcome to the Jungle")
         self.assertEqual(self.video.year, None)
 
     @file_mocker

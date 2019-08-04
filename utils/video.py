@@ -2,7 +2,7 @@ import re
 from pathlib import Path
 from .exceptions import BadFile
 from pymediainfo import MediaInfo
-
+import PTN
 
 class Video:
     def __init__(self, path):
@@ -50,29 +50,10 @@ class Video:
         self.frame_rate = video_track.frame_rate
         return None
 
-    def extract(self, regex):
-        pat = re.compile(regex)
-        match = pat.search(self.path.name)
-        if match:
-            return match.group()
-        return
-
-
-    def extract_year(self):
-        filename_movie_year = self.extract(r"(?P<year>(19|20|21)\d{2})")
-        if filename_movie_year :
-            return int(filename_movie_year)
-        return
-
-    def extrack_title(self):
-        filename_movie_title = self.extract(r"(?P<title>.*)(p.)")
-        human_readable_title = re.sub(r"\W", " ", filename_movie_title)
-        title = human_readable_title.strip()
-        return title
-
     def parse_name(self):
-        self.title = self.extrack_title()
-        self.year = self.extract_year()
+        info = PTN.parse(self.path.name)
+        self.title = info.get('title')
+        self.year = info.get('year', None)
         print("Title and year from filename are:")
         print("%s[%s]" % (self.title, self.year))
 
