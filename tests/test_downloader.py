@@ -1,6 +1,6 @@
 import unittest
 from utils.downloader import download_subs
-from .factories import movie_file
+from .factories import movie_file, TEST_MOVIES
 
 
 class TestDownloader(unittest.TestCase):
@@ -12,7 +12,7 @@ class TestDownloader(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.temp_movie = movie_file()
+        cls.temp_movie = movie_file(TEST_MOVIES[0])
         cls.temp_movie.touch()
 
     def test_download_subs(self):

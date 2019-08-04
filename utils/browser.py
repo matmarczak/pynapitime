@@ -62,8 +62,7 @@ class Browser:
         # naive string similarity comparison, needs support for title translation
         if not matched_by_year:
             if not self.video.title:
-                raise ValueError("Please add movie title or change " 
-                                 "filename.")
+                raise ValueError("Please add movie title or change " "filename.")
             raise PyNapiTimeException(
                 "No movies found for %s[%s]." % (self.video.title, self.video.year)
             )

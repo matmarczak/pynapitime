@@ -3,13 +3,15 @@ import tempfile
 import pathlib
 import random
 from unittest import mock
-TEST_MOVIES = ["Jumanji.Welcome.to.the.Jungle.2017.480p.BluRay.x264.mkv",
-               "Jumanji.Welcome.to.the.Jungle.480p.BluRay.x264.mkv",
-              ]
+
+TEST_MOVIES = [
+    "Jumanji.Welcome.to.the.Jungle.2017.480p.BluRay.x264.mkv",
+    "Jumanji.Welcome.to.the.Jungle.480p.BluRay.x264.mkv",
+]
 
 
 def file_mocker(func):
-    video_track_mock = mock.Mock(duration=2134, frame_rate='24')
+    video_track_mock = mock.Mock(duration=2134, frame_rate="24")
 
     return_mock = mock.Mock()
     return_mock.return_value = video_track_mock
@@ -30,10 +32,12 @@ class movie_file:
         temp_movie = pathlib.Path(path.name) / movie_file
         return temp_movie
 
+
 def random_movie_string(len=10):
     """Generate a random string of fixed length """
     letters = string.ascii_lowercase
-    return ''.join(random.choice(letters) for i in range(len)) + ".mkv"
+    return "".join(random.choice(letters) for i in range(len)) + ".mkv"
+
 
 class MovieFilesFactory:
     def __init__(self):

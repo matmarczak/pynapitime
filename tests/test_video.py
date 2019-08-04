@@ -50,6 +50,7 @@ class VideoTest:
 
 class TestVideo_1(VideoTest, TestCase):
     test_movie_file = TEST_MOVIES[0]
+
     def test_get_name(self):
         self.video.parse_name()
         self.assertEqual(self.video.title, "Jumanji Welcome to the Jungle")
@@ -64,6 +65,7 @@ class TestVideo_1(VideoTest, TestCase):
 
 class TestVideo_2(VideoTest, TestCase):
     test_movie_file = TEST_MOVIES[1]
+
     def test_get_name(self):
         self.video.parse_name()
         self.assertEqual(self.video.title, "Jumanji Welcome to the Jungle")

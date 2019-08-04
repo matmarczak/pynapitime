@@ -31,5 +31,7 @@ class BrowserTest:
 
 
 for idx, i in enumerate(TEST_MOVIES):
-    class_name = 'TestBrowser_{}'.format(idx)
-    globals()[class_name] = type(class_name, (BrowserTest, TestCase), {'test_movie_file':i})
+    class_name = "TestBrowser_{}".format(idx)
+    globals()[class_name] = type(
+        class_name, (BrowserTest, TestCase), {"test_movie_file": i}
+    )
