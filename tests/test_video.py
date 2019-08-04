@@ -1,7 +1,7 @@
 import pathlib
 import tempfile
 from unittest import TestCase, mock
-from .factories import movie_file
+from .factories import movie_file, TEST_MOVIES
 from utils.video import Video
 
 
@@ -18,10 +18,10 @@ def file_mocker(func):
     return decorate_function
 
 
-class VideoTest(TestCase):
+class VideoTest:
     @classmethod
     def setUpClass(cls):
-        cls.temp_movie = movie_file()
+        cls.temp_movie = movie_file(cls.test_movie_file)
         cls.video = Video(cls.temp_movie)
 
     def test_video_saves_path(self):
@@ -64,3 +64,7 @@ class VideoTest(TestCase):
         self.assertTrue(self.video.frame_rate)
         self.assertTrue(self.video.title)
         self.assertTrue(self.video.year)
+
+# allows parametrizing test cases in unittest
+for idx, i in enumerate(TEST_MOVIES):
+    globals()['TestVideo{}'.format(idx)] = type('VideoTest', (VideoTest, TestCase), {'test_movie_file':TEST_MOVIES[idx]})
