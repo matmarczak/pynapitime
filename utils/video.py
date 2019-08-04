@@ -28,7 +28,10 @@ class Video:
 
     @staticmethod
     def _extract_video_track(path):
-        mediafile = MediaInfo.parse(path)
+        try:
+            mediafile = MediaInfo.parse(path)
+        except OSError:
+            raise OSError("Mediainfo should be installed on system.")
         for i in mediafile.tracks:
             if i.track_type == "Video":
                 video_track = i
