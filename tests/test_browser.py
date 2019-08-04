@@ -1,7 +1,7 @@
 from unittest import TestCase
 from utils.video import Video
 from utils.browser import Browser
-from .factories import movie_file, file_mocker, TEST_MOVIES
+from tests.factories import movie_file, file_mocker, TEST_MOVIES
 
 
 class BrowserTest:
@@ -33,4 +33,3 @@ class BrowserTest:
 for idx, i in enumerate(TEST_MOVIES):
     class_name = 'TestBrowser_{}'.format(idx)
     globals()[class_name] = type(class_name, (BrowserTest, TestCase), {'test_movie_file':i})
-

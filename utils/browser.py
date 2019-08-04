@@ -56,11 +56,14 @@ class Browser:
 
     def find_movie(self):
         movies = self.get_movies_list()
+        if not self.video.year:
+            return movies[0]
         matched_by_year = [i for i in movies if int(i["year"]) == self.video.year]
         # naive string similarity comparison, needs support for title translation
         if not matched_by_year:
-            if self.video.title is None or self.video.year is None:
-                raise ValueError("Please add movie metadata or change " "filename.")
+            if not self.video.title:
+                raise ValueError("Please add movie title or change " 
+                                 "filename.")
             raise PyNapiTimeException(
                 "No movies found for %s[%s]." % (self.video.title, self.video.year)
             )
@@ -69,11 +72,11 @@ class Browser:
         ]
         max_score_idx = matched_by_year_scores.index(max(matched_by_year_scores))
         if self.use_scores:
-            self.movie = matched_by_year[max_score_idx]
+            movie = matched_by_year[max_score_idx]
         else:
-            self.movie = matched_by_year[0]
-        print("Found online movie: %s" % self.movie["title"])
-        return self.movie
+            movie = matched_by_year[0]
+        print("Found online movie: %s" % movie["title"])
+        return movie
 
     @staticmethod
     def get_pages(content, current):
@@ -122,7 +125,7 @@ class Browser:
 
     def get_subtitles_list(self):
         # todo cleanup variable names
-        self.find_movie()
+        self.movie = self.find_movie()
         movie_url = self.root_url + self.movie["href"]
         res_movie = requests.post(movie_url)
         assert res_movie.status_code == 200
