@@ -11,7 +11,7 @@ class Explorer:
 
     def search_files(self):
         if not self.path.is_dir():
-            return None
+            raise ValueError("Provided path isn't a directory.")
         self.videos = [
             Video(i) for i in self.path.iterdir() if i.suffix in self.video_extentions
         ]

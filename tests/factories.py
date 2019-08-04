@@ -1,5 +1,7 @@
+import string
 import tempfile
 import pathlib
+import random
 from unittest import mock
 TEST_MOVIES = ["Jumanji.Welcome.to.the.Jungle.2017.480p.BluRay.x264.mkv",
                "Jumanji.Welcome.to.the.Jungle.480p.BluRay.x264.mkv",
@@ -27,3 +29,17 @@ class movie_file:
         path = cls.tempdir
         temp_movie = pathlib.Path(path.name) / movie_file
         return temp_movie
+
+def random_movie_string(len=10):
+    """Generate a random string of fixed length """
+    letters = string.ascii_lowercase
+    return ''.join(random.choice(letters) for i in range(len)) + ".mkv"
+
+class MovieFilesFactory:
+    def __init__(self):
+        self.tempdir = tempfile.TemporaryDirectory()
+        self.movies = {}
+        for i in range(10):
+            movie = pathlib.Path(self.tempdir.name) / random_movie_string()
+            movie.touch()
+            self.movies[i] = movie
