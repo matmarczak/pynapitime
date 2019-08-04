@@ -6,11 +6,12 @@ from utils.video import Video
 
 
 def file_mocker(func):
-    video_track_mock = mock.Mock()
-    video_track_mock.duration.side_effect = 123
-    video_track_mock.frame_rate.side_effect = "24"
+    video_track_mock = mock.Mock(duration=2134, frame_rate='24')
 
-    @mock.patch("utils.video.Video._extract_video_track", video_track_mock)
+    return_mock = mock.Mock()
+    return_mock.return_value = video_track_mock
+
+    @mock.patch("utils.video.Video._extract_video_track", return_mock)
     def decorate_function(cls):
         return func(cls)
 
@@ -48,8 +49,8 @@ class VideoTest(TestCase):
     @file_mocker
     def test_get_track_data(self):
         self.video.get_track_data()
-        self.assertTrue(self.video.duration)
-        self.assertTrue(self.video.frame_rate)
+        self.assertIsInstance(self.video.duration, int)
+        self.assertIsInstance(self.video.frame_rate, str)
 
     def test_get_name(self):
         self.video.parse_name()

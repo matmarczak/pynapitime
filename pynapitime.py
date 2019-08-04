@@ -9,7 +9,7 @@ from pathlib import Path
 import sys
 
 
-def handle_file(path):
+def handle_file(path, args):
     video = Video(path)
     video.collect_movie_data()
     if video.subs_exist() and not args.overwrite:
@@ -27,9 +27,8 @@ def handle_file(path):
             "Choosed %s best match, which differs from video %s ms."
             % (args.match + 1, chosen_subs["duration_diff"])
         )
-        downloader = download_subs(video, chosen_subs["hash"])
-        downloader.download_subs()
-        print("Subtitles saved in {}".format())
+        downloader = download_subs(video.path, chosen_subs["hash"])
+
         return
 
 
@@ -56,12 +55,12 @@ def main(args):
     args = parser.parse_args(args)
 
     if Path(args.path).is_file():
-        handle_file(args.path)
+        handle_file(args.path, args)
     else:
         explorer = Explorer(args.path)
         explorer.search_files()
         for i in explorer.no_subs_videos:
-            handle_file(i.path)
+            handle_file(i.path, args)
 
 
 if __name__ == "__main__":

@@ -18,11 +18,4 @@ class TestPynapitime(unittest.TestCase):
 
     @file_mocker
     def test_handle_file(self):
-        # TODO
-        # Mocks video duration to allow program handling movie subtitiles
-        # from Browser, read about unittest.mock to mock duration of video
-        with patch("utils.video.Video") as mock:
-            duration = Mock()
-            duration.side_effect = 123
-            mock.duration = duration
-            handle_file(self.temp_movie)
+        handle_file(self.temp_movie, Mock(match=0))
