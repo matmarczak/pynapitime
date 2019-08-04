@@ -3,6 +3,8 @@ from pathlib import Path
 from .exceptions import BadFile
 from pymediainfo import MediaInfo
 import PTN
+import collections
+
 
 class Video:
     def __init__(self, path):
@@ -28,6 +30,9 @@ class Video:
 
     @staticmethod
     def _extract_video_track(path):
+        video_track = type("VideoTrack", (object,), {})
+        video_track.duration = None
+        video_track.frame_rate = None
         try:
             mediafile = MediaInfo.parse(path)
         except FileNotFoundError:
@@ -35,16 +40,17 @@ class Video:
         except OSError:
             raise OSError("Mediainfo should be installed on system.")
         for i in mediafile.tracks:
-            if i.track_type == "Video":
-                video_track = i
-                break
+            if i.duration and not video_track.duration:
+                video_track.duration = i.duration
+            if i.frame_rate and not video_track.frame_rate:
+                video_track.frame_rate = i.frame_rate
         return video_track
 
     def get_track_data(self):
         try:
             video_track = self._extract_video_track(self.path)
-        except UnboundLocalError:
-            raise BadFile("File doesn't contain video_track!")
+        except TypeError:
+            raise BadFile("Unable to extract movie duration.")
 
         self.duration = video_track.duration
         self.frame_rate = video_track.frame_rate
@@ -52,8 +58,8 @@ class Video:
 
     def parse_name(self):
         info = PTN.parse(self.path.name)
-        self.title = info.get('title')
-        self.year = info.get('year', None)
+        self.title = info.get("title")
+        self.year = info.get("year", None)
         print("Title and year from filename are:")
         print("%s[%s]" % (self.title, self.year))
 
