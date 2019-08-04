@@ -4,8 +4,7 @@ from utils.browser import Browser
 from .factories import movie_file, file_mocker, TEST_MOVIES
 
 
-class TestBrowser:
-
+class BrowserTest:
     @classmethod
     def setUp(cls):
         cls.temp_movie = movie_file(cls.test_movie_file)
@@ -33,6 +32,5 @@ class TestBrowser:
 
 for idx, i in enumerate(TEST_MOVIES):
     class_name = 'TestBrowser_{}'.format(idx)
-    globals()[class_name] = type(class_name, (TestBrowser, TestCase), {'test_movie_file':i})
-
+    globals()[class_name] = type(class_name, (BrowserTest, TestCase), {'test_movie_file':i})
 
