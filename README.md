@@ -2,6 +2,8 @@
 
 Pynapitime is a scipt to download subtitles from napiprojekt.pl based on movie duration and fps of file. It differs from other programs that it can download subtitles automatically for files which are not in napiprojekt database yet.
 
+Requires python >3.6
+
 ### Requirements
 
 Program needs **mediainfo** to be installed to work properly. Install mediainfo for your OS with instruction provided on [official page](https://mediaarea.net/en/MediaInfo/Download).
@@ -15,3 +17,4 @@ TODO:
 * add threading to multiple subtitles downloading
 * change prints to logging module
 * resolve all pylama issues
+* use logging instead of printing
