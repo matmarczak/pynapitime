@@ -22,12 +22,12 @@ def handle_file(path, args):
             print(str(e))
             return
 
-        chosen_subs = subtitles[args.match]
+        chosen_subs = subtitles[args.match-1]
         print(
             "Choosed %s best match, which differs from video %s ms."
             % (args.match + 1, chosen_subs["duration_diff"])
         )
-        downloader = download_subs(video.path, chosen_subs["hash"])
+        download_subs(video.path, chosen_subs["hash"])
 
         return
 
@@ -40,14 +40,14 @@ def main(args):
     parser.add_argument(
         "-o",
         "--overwrite",
-        help="if subtitles exist, script would overwrite",
+        help="overwrite if subtitles exist",
         action="store_true",
     )
     parser.add_argument(
         "-m",
         "--match",
-        help="specify index of subtitles sorted by duration diff, "
-        "default 0 (best match)",
+        help="specify index of subtitles sorted by duration difference, "
+        "default 1 (lowest duration diff ie 1st best match)",
         action="store",
         type=int,
         default=0,
