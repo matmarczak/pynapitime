@@ -26,6 +26,6 @@ requests==2.21.0
 six==1.12.0
 snowballstemmer==1.9.0
 soupsieve==1.9
-urllib3==1.24.1
+urllib3<1.25
 wcwidth==0.1.7
 zipp==0.5.2
