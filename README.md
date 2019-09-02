@@ -12,7 +12,7 @@ Program needs **mediainfo** to be installed to work properly. Install mediainfo 
 
 1. Download projekt: `git clone https://github.com/matmarczak/pynapitime.git`
 2. Install dependencies from requirements.txt file: `pip install -r requirements.txt`
-3. Use script: `python pynapitime.py`
+3. Use script: `python pynapitime.py path/to/file.mkv`
 
 #### Help
 
