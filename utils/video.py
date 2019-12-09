@@ -12,6 +12,8 @@ class Video:
         self.year = None
         self.title = None
         self.frame_rate = None
+        self.season = None
+        self.episode = None
 
     def subs_exist(self):
         """Checks is subtitles exist in directory."""

@@ -125,7 +125,7 @@ class Browser:
     def get_subtitles_list(self):
         # todo cleanup variable names
         self.movie = self.find_movie()
-        movie_url = self._build_url()
+        movie_url = self.root_url + self.movie["href"]
         res_movie = requests.post(movie_url)
         assert res_movie.status_code == 200
         soup_movie = BeautifulSoup(res_movie.content, "html.parser")
@@ -133,6 +133,7 @@ class Browser:
         proxy_page_url_landing = soup_movie.find("a", string="napisy")
         proxy_page_url = self.root_url + proxy_page_url_landing["href"]
         # get first subtitles page
+        proxy_page_url = self._build_movie_page(proxy_page_url)
         movie_page_res = requests.get(proxy_page_url)
         assert movie_page_res.status_code == 200
         movie_page = BeautifulSoup(movie_page_res.content, "html.parser")
@@ -158,12 +159,11 @@ class Browser:
         print("Found %s versions of subtitles." % len(all_subs))
         return self.subtitles_list
 
-    def _build_url(self):
-        movie_url = self.root_url + self.movie["href"]
+    def _build_movie_page(self, proxy_page_url):
         if self.video.season or self.video.episode:
             if self.video.season and self.video.episode:
-                movie_url += f"-s{self.video.season}-e{self.video.episode}"
+                proxy_page_url += f"-s{self.video.season}-e{self.video.episode}"
             else:
                 raise TypeError(
                     "Video is series but couldn't extract episode or season!")
-        return movie_url
+        return proxy_page_url
