@@ -1,6 +1,5 @@
 import pathlib
-import tempfile
-from unittest import TestCase, mock
+from unittest import TestCase
 from .factories import movie_file, file_mocker, TEST_MOVIES
 from utils.video import Video
 

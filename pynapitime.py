@@ -13,7 +13,7 @@ def handle_file(path, args):
     video = Video(path)
     video.collect_movie_data()
     if video.subs_exist() and not args.overwrite:
-        print("Subtitles already exist. If you want to download anyway pass -o flag.")
+        print("Subtitles already exist. If you want to download anyway pass --force flag.")
     else:
         browser = Browser(video)
         try:
@@ -38,8 +38,8 @@ def main(args):
     )
     parser.add_argument("path", type=str, help="path to video file")
     parser.add_argument(
-        "-o",
-        "--overwrite",
+        "-f",
+        "--force",
         help="overwrite if subtitles exist",
         action="store_true",
     )
