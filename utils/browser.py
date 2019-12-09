@@ -125,7 +125,7 @@ class Browser:
     def get_subtitles_list(self):
         # todo cleanup variable names
         self.movie = self.find_movie()
-        movie_url = self.root_url + self.movie["href"]
+        movie_url = self._build_url()
         res_movie = requests.post(movie_url)
         assert res_movie.status_code == 200
         soup_movie = BeautifulSoup(res_movie.content, "html.parser")
@@ -157,3 +157,13 @@ class Browser:
         self.subtitles_list = all_subs
         print("Found %s versions of subtitles." % len(all_subs))
         return self.subtitles_list
+
+    def _build_url(self):
+        movie_url = self.root_url + self.movie["href"]
+        if self.video.season or self.video.episode:
+            if self.video.season and self.video.episode:
+                movie_url += f"-s{self.video.season}-e{self.video.episode}"
+            else:
+                raise TypeError(
+                    "Video is series but couldn't extract episode or season!")
+        return movie_url

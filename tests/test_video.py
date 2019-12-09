@@ -1,9 +1,9 @@
 import pathlib
 from unittest import TestCase
 
+from tests.fixtures import series_episode
 from .factories import movie_file, file_mocker, TEST_MOVIES
 from utils.video import Video
-import pytest
 
 
 class VideoTest:
@@ -80,10 +80,6 @@ class TestVideo_2(VideoTest, TestCase):
 
 
 class TestSeriesEpisodes:
-    @pytest.fixture
-    def series_episode(self):
-        return "Friends.S01E09.1994.super.mkv"
-
     def test_series_are_detected(self, series_episode):
         test_video = Video(series_episode)
         test_video.parse_name()

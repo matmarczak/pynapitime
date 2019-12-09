@@ -22,7 +22,7 @@ def handle_file(path, args):
             print(str(e))
             return
 
-        chosen_subs = subtitles[args.match-1]
+        chosen_subs = subtitles[args.match - 1]
         print(
             "Choosed %s best match, which differs from video %s ms."
             % (args.match + 1, chosen_subs["duration_diff"])
