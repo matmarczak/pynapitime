@@ -56,7 +56,10 @@ class Video:
     def parse_name(self):
         info = PTN.parse(self.path.name)
         self.title = info.get("title")
-        self.year = info.get("year", None)
+        self.year = info.get("year")
+        if info.get("season"):
+            self.season = str(info.get("season")).zfill(2)
+            self.episode = str(info.get("episode")).zfill(2)
         print("Title and year from filename are:")
         print("%s[%s]" % (self.title, self.year))
 
