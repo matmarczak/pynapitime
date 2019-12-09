@@ -1,9 +1,7 @@
-import re
 from pathlib import Path
 from .exceptions import BadFile
-from pymediainfo import MediaInfo
 import PTN
-import collections
+import moviepy
 
 
 class Video:
@@ -34,16 +32,15 @@ class Video:
         video_track.duration = None
         video_track.frame_rate = None
         try:
-            mediafile = MediaInfo.parse(path)
+            clip = moviepy.editor.VideoFileClip(path)
         except FileNotFoundError:
             raise
         except OSError:
             raise OSError("Mediainfo should be installed on system.")
-        for i in mediafile.tracks:
-            if i.duration and not video_track.duration:
-                video_track.duration = i.duration
-            if i.frame_rate and not video_track.frame_rate:
-                video_track.frame_rate = i.frame_rate
+        if clip.duration:
+            video_track.duration = clip.duration
+        if clip.fps:
+            video_track.frame_rate = clip.fps
         return video_track
 
     def get_track_data(self):
