@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 Package wasn't maintained anymore, so it was cloned for this project to
-deal with bugs.
+deal with installation bugs.
 
 Original repo:
 https://github.com/divijbindlish/parse-torrent-name

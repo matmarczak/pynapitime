@@ -15,7 +15,6 @@ more-itertools==7.2.0
 moviepy==1.0.1
 numpy==1.17.4
 packaging==19.1
-parse-torrent-name==1.1.1
 Pillow==6.2.1
 pluggy==0.12.0
 proglog==0.1.9
