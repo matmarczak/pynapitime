@@ -14,4 +14,12 @@ class TestPynapitime(unittest.TestCase):
 
     @file_mocker
     def test_handle_file(self):
-        handle_file(self.temp_movie, Mock(match=0))
+        handle_file(self.temp_movie, Mock(match=1))
+
+class TestSeriesDownload:
+    def test_if_series_is_downloaded(self, series_episode, tmpdir):
+        with patch(
+            "utils.video.VideoFileClip",
+            return_value=Mock(duration=(23*60+30), frame_rate=24)
+        ), tmpdir.as_cwd():
+            handle_file(series_episode, Mock(match=1))

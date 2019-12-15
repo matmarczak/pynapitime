@@ -162,7 +162,7 @@ class Browser:
     def _build_movie_page(self, proxy_page_url):
         if self.video.season or self.video.episode:
             if self.video.season and self.video.episode:
-                proxy_page_url += f"-s{self.video.season}-e{self.video.episode}"
+                proxy_page_url += f"-s{self.video.season}e{self.video.episode}"
             else:
                 raise TypeError(
                     "Video is series but couldn't extract episode or season!")

@@ -1,7 +1,9 @@
 from pathlib import Path
+
+from moviepy.video.io.VideoFileClip import VideoFileClip
+
 from .exceptions import BadFile
 import PTN
-import moviepy
 
 
 class Video:
@@ -30,29 +32,21 @@ class Video:
 
     @staticmethod
     def _extract_video_track(path):
-        video_track = type("VideoTrack", (object,), {})
-        video_track.duration = None
-        video_track.frame_rate = None
+        video_track = dict(duration=None, frame_date=None)
         try:
-            clip = moviepy.editor.VideoFileClip(path)
+            clip = VideoFileClip(path.name)
         except FileNotFoundError:
             raise
         except OSError:
-            raise OSError("Mediainfo should be installed on system.")
-        if clip.duration:
-            video_track.duration = clip.duration
-        if clip.fps:
-            video_track.frame_rate = clip.fps
-        return video_track
+            raise
+        duration_ms = clip.duration * 1000
+        return duration_ms, clip.fps
 
     def get_track_data(self):
         try:
-            video_track = self._extract_video_track(self.path)
+            self.duration, self.frame_rate = self._extract_video_track(self.path)
         except TypeError:
             raise BadFile("Unable to extract movie duration.")
-
-        self.duration = video_track.duration
-        self.frame_rate = video_track.frame_rate
         return None
 
     def parse_name(self):

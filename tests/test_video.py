@@ -1,7 +1,6 @@
 import pathlib
 from unittest import TestCase
 
-from tests.fixtures import series_episode
 from .factories import movie_file, file_mocker, TEST_MOVIES
 from utils.video import Video
 
