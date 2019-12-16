@@ -32,7 +32,6 @@ class Video:
 
     @staticmethod
     def _extract_video_track(path):
-        video_track = dict(duration=None, frame_date=None)
         try:
             clip = VideoFileClip(path.name)
         except FileNotFoundError:
