@@ -14,7 +14,10 @@ class Browser:
         self.movie = None
         self.subtitles_list = None
 
-    def get_movies_list(self):
+    def get_matched_movies(self) -> List[Dict[str, str]]:
+        TITLE_STR = "tytul"
+        URL_STR = "href"
+
         values = {
             "associate": "",
             "queryKind": 0,
@@ -23,24 +26,24 @@ class Browser:
         }
 
         res = requests.post(self.search_url, values)
-        assert res.status_code == 200
+        res.raise_for_status()
         soup = BeautifulSoup(res.content, "html.parser")
         movies = soup.findAll("a", class_="movieTitleCat")
 
-        movies_processed = []
-        for i in movies:
+        matched_movies = []
+        for movie in movies:
             try:
-                movie_dict = dict(
-                    title=i["tytul"],
-                    href=i["href"],
-                    year=re.search(r"\d{4}", i.h3.text).group(0),
+                movie_info = dict(
+                    title=movie[TITLE_STR],
+                    href=movie[URL_STR],
+                    year=re.search(r"\d{4}", movie.h3.text).group(0),
                 )
             except AttributeError:
-                "Year is not present on napiprojekt website."
+                "Year is not present on napiprojekt website, no movies matched."
 
-            movies_processed.append(movie_dict)
+            matched_movies.append(movie_info)
 
-        return movies_processed
+        return matched_movies
 
     @staticmethod
     def similarity_score(title1, title2):
@@ -55,7 +58,7 @@ class Browser:
         return time_ms
 
     def find_movie(self):
-        movies = self.get_movies_list()
+        movies = self.get_matched_movies()
         if not self.video.year:
             return movies[0]
         matched_by_year = [i for i in movies if int(i["year"]) == self.video.year]

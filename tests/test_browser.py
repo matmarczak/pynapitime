@@ -14,7 +14,7 @@ class BrowserTest:
         cls.browser = Browser(cls.video)
 
     def test_movie_list(self):
-        movie_list = self.browser.get_movies_list()
+        movie_list = self.browser.get_matched_movies()
         self.assertIsInstance(movie_list, list)
 
     @file_mocker
