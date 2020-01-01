@@ -7,12 +7,12 @@ import PTN
 
 
 class Video:
-    def __init__(self, path):
+    def __init__(self, path, title=None):
         self.path = Path(path)
         self.subtitles_exist = False
         self.duration = None
         self.year = None
-        self.title = None
+        self.title = title
         self.frame_rate = None
         self.season = None
         self.episode = None
@@ -33,7 +33,7 @@ class Video:
     @staticmethod
     def _extract_video_track(path):
         try:
-            clip = VideoFileClip(path.name)
+            clip = VideoFileClip(str(path))
         except FileNotFoundError:
             raise
         except OSError:
@@ -50,13 +50,17 @@ class Video:
 
     def parse_name(self):
         info = PTN.parse(self.path.name)
-        self.title = info.get("title")
+        self._get_title_if_not_set(info)
         self.year = info.get("year")
         if info.get("season"):
             self.season = str(info.get("season")).zfill(2)
             self.episode = str(info.get("episode")).zfill(2)
         print("Title and year from filename are:")
-        print("%s[%s]" % (self.title, self.year))
+        print("%s [%s]" % (self.title, self.year))
+
+    def _get_title_if_not_set(self, info):
+        if not self.title:
+            self.title = info.get("title")
 
     def collect_movie_data(self):
         self.get_track_data()

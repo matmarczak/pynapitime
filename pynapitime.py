@@ -10,9 +10,9 @@ import sys
 
 
 def handle_file(path, args):
-    video = Video(path)
+    video = Video(path, title=args.title)
     video.collect_movie_data()
-    if video.subs_exist() and not args.overwrite:
+    if video.subs_exist() and not args.force:
         print("Subtitles already exist. If you want to download anyway pass --force flag.")
     else:
         browser = Browser(video)
@@ -47,10 +47,19 @@ def main(args):
         "-m",
         "--match",
         help="specify index of subtitles sorted by duration difference, "
-        "default 1 (lowest duration diff ie 1st best match)",
+        "default 1 (lowest duration diff - ie 1st best match)",
         action="store",
         type=int,
         default=0,
+    )
+
+    parser.add_argument(
+        "-t",
+        "--title",
+        help="specify title used to search for movie",
+        action="store",
+        type=str,
+        default=None
     )
     args = parser.parse_args(args)
 
