@@ -1,5 +1,5 @@
 import logging
-from typing import List, Dict
+from typing import List, Dict, Union
 
 import requests
 from bs4 import BeautifulSoup
@@ -8,6 +8,8 @@ import difflib
 from utils.exceptions import PyNapiTimeException, MovieNotFound
 
 logger = logging.getLogger(__name__)
+
+Movie = Dict[str, Union[str, int]]
 
 class Browser:
     def __init__(self, video):
@@ -18,7 +20,7 @@ class Browser:
         self.movie = None
         self.subtitles_list = None
 
-    def get_matched_movies(self) -> List[Dict[str, str]]:
+    def get_matched_movies(self) -> List[Movie]:
         TITLE_STR = "tytul"
         URL_STR = "href"
 
@@ -40,7 +42,9 @@ class Browser:
                 movie_info = dict(
                     title=movie[TITLE_STR],
                     href=movie[URL_STR],
-                    year=re.search(r"\d{4}", movie.h3.text).group(0),
+                    year=int(
+                        re.search(r"\d{4}", movie.h3.text).group(0)
+                    ),
                 )
             except AttributeError:
                 "Year is not present on napiprojekt website, no movies matched."
@@ -64,25 +68,34 @@ class Browser:
     def find_movie(self):
         movies = self.get_matched_movies()
         if not self.video.year:
+            # if no year is provided, detection cannot be performed, return first
             return movies[0]
-        matched_by_year = [i for i in movies if int(i["year"]) == self.video.year]
-        # naive string similarity comparison, needs support for title translation
-        if not matched_by_year:
-            if not self.video.title:
-                raise ValueError("Please add movie title or change " "filename.")
-            raise PyNapiTimeException(
-                "No movies found for %s[%s]." % (self.video.title, self.video.year)
-            )
+
+        matched_by_year = self._filter_by_year(movies)
+        movie = self._get_best_by_title_similarity(matched_by_year)
+        print("Found match movie: %s" % movie["title"])
+        return movie
+
+    def _get_best_by_title_similarity(self, matched_by_year) -> Movie:
         matched_by_year_scores = [
-            self.similarity_score(self.video.title, i["title"]) for i in matched_by_year
+            self.similarity_score(self.video.title, movie["title"]) for movie in matched_by_year
         ]
         max_score_idx = matched_by_year_scores.index(max(matched_by_year_scores))
         if self.use_scores:
             movie = matched_by_year[max_score_idx]
         else:
             movie = matched_by_year[0]
-        print("Found online movie: %s" % movie["title"])
         return movie
+
+    def _filter_by_year(self, movies):
+        matched_by_year = [movie for movie in movies if movie["year"] == self.video.year]
+        if not matched_by_year:
+            if not self.video.title:
+                raise ValueError("No matched movies found. Please add --title or change filename.")
+            raise PyNapiTimeException(
+                "No movies found for %s [%s]." % (self.video.title, self.video.year)
+            )
+        return matched_by_year
 
     @staticmethod
     def get_pages(content, current):
