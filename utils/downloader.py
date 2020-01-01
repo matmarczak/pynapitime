@@ -24,4 +24,4 @@ def download_subs(path, movie_hash):
     subs_file.touch()
     with subs_file.open("wb") as file:
         file.write(decoded)
-    print("Subtitles saved in {}".format(str(subs_file)[-40:]))
+    print("Subtitles saved in {}".format(subs_file))

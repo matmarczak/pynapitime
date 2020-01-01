@@ -1,9 +1,13 @@
+import logging
+from typing import List, Dict
+
 import requests
 from bs4 import BeautifulSoup
 import re
 import difflib
-from utils.exceptions import PyNapiTimeException
+from utils.exceptions import PyNapiTimeException, MovieNotFound
 
+logger = logging.getLogger(__name__)
 
 class Browser:
     def __init__(self, video):
@@ -90,6 +94,7 @@ class Browser:
         return pages
 
     def get_page_subs(self, page):
+        logger.debug(f"Get subtitles from url {page}")
         subtitles_list = []
         if isinstance(page, BeautifulSoup):
             pass
@@ -126,17 +131,21 @@ class Browser:
         return subtitles_list
 
     def get_subtitles_list(self):
-        # todo cleanup variable names
         self.movie = self.find_movie()
         movie_url = self.root_url + self.movie["href"]
+        logger.debug(f"Movie url is {movie_url}")
+
         res_movie = requests.post(movie_url)
         assert res_movie.status_code == 200
         soup_movie = BeautifulSoup(res_movie.content, "html.parser")
         # this is proxy page, scrape href and land to sbutitles page
         proxy_page_url_landing = soup_movie.find("a", string="napisy")
+        if proxy_page_url_landing is None:
+            raise MovieNotFound("Movie was not loaded properly from napiprojekt.")
         proxy_page_url = self.root_url + proxy_page_url_landing["href"]
         # get first subtitles page
         proxy_page_url = self._build_movie_page(proxy_page_url)
+        logger.debug(f"Proxy page url is {proxy_page_url}")
         movie_page_res = requests.get(proxy_page_url)
         assert movie_page_res.status_code == 200
         movie_page = BeautifulSoup(movie_page_res.content, "html.parser")
