@@ -10,8 +10,7 @@ import sys
 
 
 def handle_file(path, args):
-    video = Video(path, title=args.title)
-    video.collect_movie_data()
+    video = Video(path, title=args.title, year=args.year)
     if video.subs_exist() and not args.force:
         print("Subtitles already exist. If you want to download anyway pass --force flag.")
     else:
@@ -25,7 +24,7 @@ def handle_file(path, args):
         chosen_subs = subtitles[args.match - 1]
         print(
             "Choosed %s best match, which differs from video %s ms."
-            % (args.match + 1, chosen_subs["duration_diff"])
+            % (args.match, chosen_subs["duration_diff"])
         )
         download_subs(video.path, chosen_subs["hash"])
 
@@ -50,15 +49,22 @@ def main(args):
         "default 1 (lowest duration diff - ie 1st best match)",
         action="store",
         type=int,
-        default=0,
+        default=1,
     )
-
     parser.add_argument(
         "-t",
         "--title",
         help="specify title used to search for movie",
         action="store",
         type=str,
+        default=None
+    )
+    parser.add_argument(
+        "-y",
+        "--year",
+        help="specify year used to search for movie",
+        action="store",
+        type=int,
         default=None
     )
     args = parser.parse_args(args)

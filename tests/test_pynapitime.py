@@ -1,5 +1,3 @@
-from pathlib import PosixPath
-
 import pytest
 
 from pynapitime import handle_file
@@ -8,15 +6,8 @@ from unittest.mock import Mock, patch
 
 @pytest.fixture
 def mock_args():
-    return Mock(match=1)
+    return Mock(match=1, title=None)
 
-@pytest.fixture
-def mock_videoclip():
-    with patch(
-            "utils.video.VideoFileClip",
-            return_value=Mock(duration=(23 * 60 + 30), frame_rate=24)
-    ) as mock_video:
-        yield mock_video
 
 def test_handle_file(movie_path, mock_args, track_data):
     movie_path.ensure(file=True)
@@ -28,7 +19,7 @@ def test_if_series_is_downloaded(series_episode, tmpdir, mock_args,
         handle_file(series_episode, mock_args)
 
 
-def test_subtitles_are_saved_in_when_absolute_path(series_episode, tmpdir,
+def test_subtitles_are_saved_when_absolute_path(series_episode, tmpdir,
                                                    mock_videoclip, mock_args):
     some_distant_file = tmpdir.join("some", "distant", "path", series_episode)
     some_distant_file.ensure()
@@ -36,9 +27,9 @@ def test_subtitles_are_saved_in_when_absolute_path(series_episode, tmpdir,
     some_distant_file.extension = "txt"
     assert some_distant_file.check(file=1)
 
-def test_subtitles_are_saved_in_when_relative_path(series_episode, tmpdir,
+def test_subtitles_are_saved_when_relative_path(series_episode, tmpdir,
                                                    mock_videoclip, mock_args):
     with patch("utils.downloader.Path") as mock_path:
         handle_file(f"relative/path/{series_episode}", mock_args)
         assert mock_path.called
-        assert mock_path.called_with(PosixPath('relative/path/{series_episode}'))
+        assert mock_path.call_args[0][0].parts == ('relative', 'path', series_episode)

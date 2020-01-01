@@ -11,6 +11,18 @@ logger = logging.getLogger(__name__)
 
 Movie = Dict[str, Union[str, int]]
 
+
+def time_to_ms(timestr):
+    splitted = timestr.split(":")
+    extracted = re.search(r'(\d{2}):(\d{2}):(\d{2}).(\d*)', timestr).groups()
+    time_ms = 0.0
+    time_ms += float(extracted[0]) * 3600 * 1000
+    time_ms += float(extracted[1]) * 60 * 1000
+    time_ms += float(extracted[2]) * 1000
+    time_ms += float(extracted[3])
+    return time_ms
+
+
 class Browser:
     def __init__(self, video):
         self.video = video
@@ -19,6 +31,8 @@ class Browser:
         self.use_scores = False
         self.movie = None
         self.subtitles_list = None
+
+        self.video.collect_movie_data()
 
     def get_matched_movies(self) -> List[Movie]:
         TITLE_STR = "tytul"
@@ -57,15 +71,7 @@ class Browser:
     def similarity_score(title1, title2):
         return difflib.SequenceMatcher(None, title1, title2).ratio()
 
-    @staticmethod
-    def time_to_ms(x):
-        time_ms = 0.0
-        time_ms = time_ms + float(float(x.split(":")[0]) * 3600 * 1000)
-        time_ms = time_ms + float(float(x.split(":")[1]) * 60 * 1000)
-        time_ms = time_ms + float(float(x.split(":")[2]) * 1000)
-        return time_ms
-
-    def find_movie(self):
+    def find_movie(self) -> Movie:
         movies = self.get_matched_movies()
         if not self.video.year:
             # if no year is provided, detection cannot be performed, return first
@@ -106,7 +112,7 @@ class Browser:
                 pages.append(i.parent["href"])
         return pages
 
-    def get_page_subs(self, page):
+    def extract_subtitles_from(self, page):
         logger.debug(f"Get subtitles from url {page}")
         subtitles_list = []
         if isinstance(page, BeautifulSoup):
@@ -118,14 +124,14 @@ class Browser:
             page = BeautifulSoup(res.content, "html.parser")
 
         subtitle_list_html = page.findAll("a", class_="tableA")
-        for i in subtitle_list_html:
-            subtitles = i.find_previous("tr")
+        for subtitle_html in subtitle_list_html:
+            subtitles = subtitle_html.find_previous("tr")
             duration = subtitles.findAll("td")[3].p.string
             if duration:
-                duration_ms = self.time_to_ms(duration)
+                duration_ms = time_to_ms(duration)
             else:
                 duration_ms = 0
-            row = list(i.parents)[2]
+            row = list(subtitle_html.parents)[2]
             metadata = row["title"]
             try:
                 fps = re.search(r"FPS:</b> (\d{2}.\d{0,4})", metadata).group()
@@ -134,7 +140,7 @@ class Browser:
 
             subtitles_list.append(
                 dict(
-                    hash=i["href"].split(":")[1],
+                    hash=subtitle_html["href"].split(":")[1],
                     duration=duration_ms,
                     fps=fps,
                     metadata=metadata,
@@ -164,15 +170,16 @@ class Browser:
         movie_page = BeautifulSoup(movie_page_res.content, "html.parser")
         pages = self.get_pages(movie_page, proxy_page_url_landing)
         # page is already cached
-        subs_page_1 = self.get_page_subs(movie_page)
+        subs_page_1 = self.extract_subtitles_from(movie_page)
         all_subs = subs_page_1
         print("There are %s pages with subtitles." % len(pages))
 
-        for i in pages[1:]:
-            all_subs += self.get_page_subs(movie_page)
+        #start from 2nd element, first was already checked
+        for page in pages[1:]:
+            all_subs += self.extract_subtitles_from(page)
 
-        for i in all_subs:
-            i["duration_diff"] = abs(self.video.duration - i["duration"])
+        for subtitles in all_subs:
+            subtitles["duration_diff"] = abs(self.video.duration - subtitles["duration"])
         # sort to get best matches first
         all_subs.sort(key=lambda x: x["duration_diff"])
         if not all_subs:
@@ -180,9 +187,8 @@ class Browser:
                 "No subtitles found for movie %s[%s]."
                 % (self.video.title, self.video.year)
             )
-        self.subtitles_list = all_subs
         print("Found %s versions of subtitles." % len(all_subs))
-        return self.subtitles_list
+        return all_subs
 
     def _build_movie_page(self, proxy_page_url):
         if self.video.season or self.video.episode:

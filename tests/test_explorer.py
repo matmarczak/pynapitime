@@ -1,9 +1,6 @@
 from unittest import TestCase
 from unittest.mock import patch, Mock
-from pathlib import Path
 from tests.factories import MovieFilesFactory
-
-import pytest
 
 from utils.explorer import Explorer
 
