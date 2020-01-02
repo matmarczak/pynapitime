@@ -1,8 +1,24 @@
+import logging
+from typing import List, Dict, Union
+
 import requests
 from bs4 import BeautifulSoup
 import re
 import difflib
-from utils.exceptions import PyNapiTimeException
+from utils.exceptions import PyNapiTimeException, MovieNotFound
+
+Movie = Dict[str, Union[str, int]]
+
+
+def time_to_ms(timestr):
+    splitted = timestr.split(":")
+    extracted = re.search(r'(\d{2}):(\d{2}):(\d{2}).(\d*)', timestr).groups()
+    time_ms = 0.0
+    time_ms += float(extracted[0]) * 3600 * 1000
+    time_ms += float(extracted[1]) * 60 * 1000
+    time_ms += float(extracted[2]) * 1000
+    time_ms += float(extracted[3])
+    return time_ms
 
 
 class Browser:
@@ -14,7 +30,12 @@ class Browser:
         self.movie = None
         self.subtitles_list = None
 
-    def get_movies_list(self):
+        self.video.collect_movie_data()
+
+    def get_matched_movies(self) -> List[Movie]:
+        TITLE_STR = "tytul"
+        URL_STR = "href"
+
         values = {
             "associate": "",
             "queryKind": 0,
@@ -23,59 +44,62 @@ class Browser:
         }
 
         res = requests.post(self.search_url, values)
-        assert res.status_code == 200
+        res.raise_for_status()
         soup = BeautifulSoup(res.content, "html.parser")
         movies = soup.findAll("a", class_="movieTitleCat")
 
-        movies_processed = []
-        for i in movies:
+        matched_movies = []
+        for movie in movies:
             try:
-                movie_dict = dict(
-                    title=i["tytul"],
-                    href=i["href"],
-                    year=re.search(r"\d{4}", i.h3.text).group(0),
+                movie_info = dict(
+                    title=movie[TITLE_STR],
+                    href=movie[URL_STR],
+                    year=int(
+                        re.search(r"\d{4}", movie.h3.text).group(0)
+                    ),
                 )
             except AttributeError:
-                "Year is not present on napiprojekt website."
+                "Year is not present on napiprojekt website, no movies matched."
 
-            movies_processed.append(movie_dict)
+            matched_movies.append(movie_info)
 
-        return movies_processed
+        return matched_movies
 
     @staticmethod
     def similarity_score(title1, title2):
         return difflib.SequenceMatcher(None, title1, title2).ratio()
 
-    @staticmethod
-    def time_to_ms(x):
-        time_ms = 0.0
-        time_ms = time_ms + float(float(x.split(":")[0]) * 3600 * 1000)
-        time_ms = time_ms + float(float(x.split(":")[1]) * 60 * 1000)
-        time_ms = time_ms + float(float(x.split(":")[2]) * 1000)
-        return time_ms
-
-    def find_movie(self):
-        movies = self.get_movies_list()
+    def find_napiprojekt_movie(self) -> Movie:
+        movies = self.get_matched_movies()
         if not self.video.year:
+            # if no year is provided, detection cannot be performed, return first
             return movies[0]
-        matched_by_year = [i for i in movies if int(i["year"]) == self.video.year]
-        # naive string similarity comparison, needs support for title translation
-        if not matched_by_year:
-            if not self.video.title:
-                raise ValueError("Please add movie title or change " "filename.")
-            raise PyNapiTimeException(
-                "No movies found for %s[%s]." % (self.video.title, self.video.year)
-            )
+
+        matched_by_year = self._filter_by_year(movies)
+        movie = self._get_best_by_title_similarity(matched_by_year)
+        print("Found match movie: %s" % movie["title"])
+        return movie
+
+    def _get_best_by_title_similarity(self, matched_by_year) -> Movie:
         matched_by_year_scores = [
-            self.similarity_score(self.video.title, i["title"]) for i in matched_by_year
+            self.similarity_score(self.video.title, movie["title"]) for movie in matched_by_year
         ]
         max_score_idx = matched_by_year_scores.index(max(matched_by_year_scores))
         if self.use_scores:
             movie = matched_by_year[max_score_idx]
         else:
             movie = matched_by_year[0]
-        print("Found online movie: %s" % movie["title"])
         return movie
+
+    def _filter_by_year(self, movies):
+        matched_by_year = [movie for movie in movies if movie["year"] == self.video.year]
+        if not matched_by_year:
+            if not self.video.title:
+                raise ValueError("No matched movies found. Please add --title or change filename.")
+            raise PyNapiTimeException(
+                "No movies found for %s [%s]." % (self.video.title, self.video.year)
+            )
+        return matched_by_year
 
     @staticmethod
     def get_pages(content, current):
@@ -86,7 +110,7 @@ class Browser:
                 pages.append(i.parent["href"])
         return pages
 
-    def get_page_subs(self, page):
+    def extract_subtitles_from(self, page):
         subtitles_list = []
         if isinstance(page, BeautifulSoup):
             pass
@@ -97,14 +121,14 @@ class Browser:
             page = BeautifulSoup(res.content, "html.parser")
 
         subtitle_list_html = page.findAll("a", class_="tableA")
-        for i in subtitle_list_html:
-            subtitles = i.find_previous("tr")
+        for subtitle_html in subtitle_list_html:
+            subtitles = subtitle_html.find_previous("tr")
             duration = subtitles.findAll("td")[3].p.string
             if duration:
-                duration_ms = self.time_to_ms(duration)
+                duration_ms = time_to_ms(duration)
             else:
                 duration_ms = 0
-            row = list(i.parents)[2]
+            row = list(subtitle_html.parents)[2]
             metadata = row["title"]
             try:
                 fps = re.search(r"FPS:</b> (\d{2}.\d{0,4})", metadata).group()
@@ -113,7 +137,7 @@ class Browser:
 
             subtitles_list.append(
                 dict(
-                    hash=i["href"].split(":")[1],
+                    hash=subtitle_html["href"].split(":")[1],
                     duration=duration_ms,
                     fps=fps,
                     metadata=metadata,
@@ -123,14 +147,16 @@ class Browser:
         return subtitles_list
 
     def get_subtitles_list(self):
-        # todo cleanup variable names
-        self.movie = self.find_movie()
+        self.movie = self.find_napiprojekt_movie()
         movie_url = self.root_url + self.movie["href"]
+
         res_movie = requests.post(movie_url)
         assert res_movie.status_code == 200
         soup_movie = BeautifulSoup(res_movie.content, "html.parser")
-        # this is proxy page, scrape href and land to sbutitles page
+        # this is proxy page, scrape href and go to subtitles page
         proxy_page_url_landing = soup_movie.find("a", string="napisy")
+        if proxy_page_url_landing is None:
+            raise MovieNotFound("Movie was not loaded from napiprojekt. Check movie on website.")
         proxy_page_url = self.root_url + proxy_page_url_landing["href"]
         # get first subtitles page
         proxy_page_url = self._build_movie_page(proxy_page_url)
@@ -139,25 +165,23 @@ class Browser:
         movie_page = BeautifulSoup(movie_page_res.content, "html.parser")
         pages = self.get_pages(movie_page, proxy_page_url_landing)
         # page is already cached
-        subs_page_1 = self.get_page_subs(movie_page)
-        all_subs = subs_page_1
+        subtitles_list = self.extract_subtitles_from(movie_page)
         print("There are %s pages with subtitles." % len(pages))
 
-        for i in pages[1:]:
-            all_subs += self.get_page_subs(movie_page)
+        for page in pages[1:]:
+            subtitles_list += self.extract_subtitles_from(page)
 
-        for i in all_subs:
-            i["duration_diff"] = abs(self.video.duration - i["duration"])
+        for subtitles in subtitles_list:
+            subtitles["duration_diff"] = abs(self.video.duration - subtitles["duration"])
         # sort to get best matches first
-        all_subs.sort(key=lambda x: x["duration_diff"])
-        if not all_subs:
+        subtitles_list.sort(key=lambda x: x["duration_diff"])
+        if not subtitles_list:
             raise PyNapiTimeException(
                 "No subtitles found for movie %s[%s]."
                 % (self.video.title, self.video.year)
             )
-        self.subtitles_list = all_subs
-        print("Found %s versions of subtitles." % len(all_subs))
-        return self.subtitles_list
+        print("Found %s subtitles." % len(subtitles_list))
+        return subtitles_list
 
     def _build_movie_page(self, proxy_page_url):
         if self.video.season or self.video.episode:

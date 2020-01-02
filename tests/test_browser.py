@@ -1,37 +1,28 @@
-from unittest import TestCase
-from utils.video import Video
-from utils.browser import Browser
-from tests.factories import movie_file, file_mocker, TEST_MOVIES
+import pytest
+
+from utils import browser
 
 
-class BrowserTest:
-    @classmethod
-    def setUp(cls):
-        cls.temp_movie = movie_file(cls.test_movie_file)
-        cls.video = Video(cls.temp_movie)
-        cls.video.parse_name()
-        cls.video.duration = 7143143
-        cls.browser = Browser(cls.video)
-
-    def test_movie_list(self):
-        movie_list = self.browser.get_movies_list()
-        self.assertIsInstance(movie_list, list)
-
-    @file_mocker
-    def test_find_movie(self):
-        self.video.collect_movie_data()
-        movie = self.browser.find_movie()
-        self.assertIsInstance(movie, dict)
-        self.assertTrue(movie["title"])
-
-    @file_mocker
-    def test_get_subtitles_list(self):
-        subs_list = self.browser.get_subtitles_list()
-        self.assertTrue(len(subs_list) > 0)
+def test_found_movies(mock_videoclip, browser):
+    movie = browser.find_napiprojekt_movie()
+    assert isinstance(movie, dict)
+    assert movie["title"]
+    assert movie["year"]
+    assert movie["href"]
 
 
-for idx, i in enumerate(TEST_MOVIES):
-    class_name = "TestBrowser_{}".format(idx)
-    globals()[class_name] = type(
-        class_name, (BrowserTest, TestCase), {"test_movie_file": i}
-    )
+def test_get_subtitles_list(mock_videoclip, browser):
+    subs = browser.get_subtitles_list()
+    assert subs
+
+
+@pytest.mark.parametrize(
+    "timestr,expected_ms",
+    [
+        ("00:21:54.800", 800+54*1000+21*60*1000),
+        ("00:25:00.960", 1500960.0)
+    ]
+)
+def test_time_to_ms(timestr, expected_ms):
+    converted_time = browser.time_to_ms(timestr)
+    assert converted_time == expected_ms

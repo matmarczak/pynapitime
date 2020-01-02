@@ -7,12 +7,12 @@ import PTN
 
 
 class Video:
-    def __init__(self, path):
+    def __init__(self, path, title=None, year=None):
         self.path = Path(path)
         self.subtitles_exist = False
         self.duration = None
-        self.year = None
-        self.title = None
+        self.year = year
+        self.title = title
         self.frame_rate = None
         self.season = None
         self.episode = None
@@ -33,11 +33,14 @@ class Video:
     @staticmethod
     def _extract_video_track(path):
         try:
-            clip = VideoFileClip(path.name)
+            clip = VideoFileClip(str(path))
         except FileNotFoundError:
             raise
         except OSError:
             raise
+        else:
+            clip.reader.close()
+            clip.audio.reader.close_proc()
         duration_ms = clip.duration * 1000
         return duration_ms, clip.fps
 
@@ -45,18 +48,26 @@ class Video:
         try:
             self.duration, self.frame_rate = self._extract_video_track(self.path)
         except TypeError:
-            raise BadFile("Unable to extract movie duration.")
+            raise BadFile("Unable to extract duration or fps.")
         return None
 
     def parse_name(self):
         info = PTN.parse(self.path.name)
-        self.title = info.get("title")
-        self.year = info.get("year")
+        self._get_title_if_not_set(info)
+        self._get_year_if_not_set(info)
         if info.get("season"):
             self.season = str(info.get("season")).zfill(2)
             self.episode = str(info.get("episode")).zfill(2)
         print("Title and year from filename are:")
-        print("%s[%s]" % (self.title, self.year))
+        print("%s [%s]" % (self.title, self.year))
+
+    def _get_year_if_not_set(self, info):
+        if not self.year:
+            self.year = info.get("year")
+
+    def _get_title_if_not_set(self, info):
+        if not self.title:
+            self.title = info.get("title")
 
     def collect_movie_data(self):
         self.get_track_data()
