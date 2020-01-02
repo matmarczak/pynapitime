@@ -38,6 +38,9 @@ class Video:
             raise
         except OSError:
             raise
+        else:
+            clip.reader.close()
+            clip.audio.reader.close_proc()
         duration_ms = clip.duration * 1000
         return duration_ms, clip.fps
 
