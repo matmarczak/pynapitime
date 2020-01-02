@@ -72,7 +72,7 @@ vcr_mocks = vcr.VCR(
 )
 
 
-@pytest.fixture(autouse=True, scope="session")
+@pytest.fixture(autouse=False, scope="session")
 def response_mocks():
     with vcr_mocks.use_cassette("napiprojekt_mocks.yml"):
         yield
