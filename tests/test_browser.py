@@ -4,7 +4,7 @@ from utils import browser
 
 
 def test_found_movies(mock_videoclip, browser):
-    movie = browser.find_movie()
+    movie = browser.find_napiprojekt_movie()
     assert isinstance(movie, dict)
     assert movie["title"]
     assert movie["year"]

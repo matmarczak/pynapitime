@@ -7,8 +7,6 @@ import re
 import difflib
 from utils.exceptions import PyNapiTimeException, MovieNotFound
 
-logger = logging.getLogger(__name__)
-
 Movie = Dict[str, Union[str, int]]
 
 
@@ -71,7 +69,7 @@ class Browser:
     def similarity_score(title1, title2):
         return difflib.SequenceMatcher(None, title1, title2).ratio()
 
-    def find_movie(self) -> Movie:
+    def find_napiprojekt_movie(self) -> Movie:
         movies = self.get_matched_movies()
         if not self.video.year:
             # if no year is provided, detection cannot be performed, return first
@@ -113,7 +111,6 @@ class Browser:
         return pages
 
     def extract_subtitles_from(self, page):
-        logger.debug(f"Get subtitles from url {page}")
         subtitles_list = []
         if isinstance(page, BeautifulSoup):
             pass
@@ -150,45 +147,41 @@ class Browser:
         return subtitles_list
 
     def get_subtitles_list(self):
-        self.movie = self.find_movie()
+        self.movie = self.find_napiprojekt_movie()
         movie_url = self.root_url + self.movie["href"]
-        logger.debug(f"Movie url is {movie_url}")
 
         res_movie = requests.post(movie_url)
         assert res_movie.status_code == 200
         soup_movie = BeautifulSoup(res_movie.content, "html.parser")
-        # this is proxy page, scrape href and land to sbutitles page
+        # this is proxy page, scrape href and go to subtitles page
         proxy_page_url_landing = soup_movie.find("a", string="napisy")
         if proxy_page_url_landing is None:
-            raise MovieNotFound("Movie was not loaded properly from napiprojekt.")
+            raise MovieNotFound("Movie was not loaded from napiprojekt. Check movie on website.")
         proxy_page_url = self.root_url + proxy_page_url_landing["href"]
         # get first subtitles page
         proxy_page_url = self._build_movie_page(proxy_page_url)
-        logger.debug(f"Proxy page url is {proxy_page_url}")
         movie_page_res = requests.get(proxy_page_url)
         assert movie_page_res.status_code == 200
         movie_page = BeautifulSoup(movie_page_res.content, "html.parser")
         pages = self.get_pages(movie_page, proxy_page_url_landing)
         # page is already cached
-        subs_page_1 = self.extract_subtitles_from(movie_page)
-        all_subs = subs_page_1
+        subtitles_list = self.extract_subtitles_from(movie_page)
         print("There are %s pages with subtitles." % len(pages))
 
-        #start from 2nd element, first was already checked
         for page in pages[1:]:
-            all_subs += self.extract_subtitles_from(page)
+            subtitles_list += self.extract_subtitles_from(page)
 
-        for subtitles in all_subs:
+        for subtitles in subtitles_list:
             subtitles["duration_diff"] = abs(self.video.duration - subtitles["duration"])
         # sort to get best matches first
-        all_subs.sort(key=lambda x: x["duration_diff"])
-        if not all_subs:
+        subtitles_list.sort(key=lambda x: x["duration_diff"])
+        if not subtitles_list:
             raise PyNapiTimeException(
                 "No subtitles found for movie %s[%s]."
                 % (self.video.title, self.video.year)
             )
-        print("Found %s versions of subtitles." % len(all_subs))
-        return all_subs
+        print("Found %s subtitles." % len(subtitles_list))
+        return subtitles_list
 
     def _build_movie_page(self, proxy_page_url):
         if self.video.season or self.video.episode:
