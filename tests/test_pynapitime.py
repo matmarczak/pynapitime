@@ -6,7 +6,7 @@ from unittest.mock import Mock, patch
 
 @pytest.fixture
 def mock_args():
-    return Mock(match=1, title=None)
+    return Mock(match=1, title=None, year=None)
 
 
 def test_handle_file(movie_path, mock_args, track_data):

@@ -65,16 +65,17 @@ def track_data():
 
 
 vcr_mocks = vcr.VCR(
-    serializer='yaml',
-    cassette_library_dir='tests/response_mocks',
-    record_mode='once',
-    match_on=("method", "scheme", "host", "port", "path", "query", "body")
+    serializer="json",
+    cassette_library_dir="tests/response_mocks",
+    record_mode="new_episodes",
+    match_on=("method", "scheme", "host", "port", "path", "query", "body"),
+    decode_compressed_response=True,
 )
 
 
-@pytest.fixture(autouse=False, scope="session")
+@pytest.fixture(autouse=True, scope="session")
 def response_mocks():
-    with vcr_mocks.use_cassette("napiprojekt_mocks.yml"):
+    with vcr_mocks.use_cassette("napiprojekt_mocks.json"):
         yield
 
 
