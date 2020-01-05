@@ -9,9 +9,11 @@ def mock_args():
     return Mock(match=1, title=None, year=None)
 
 
-def test_handle_file(movie_path, mock_args, track_data):
+def test_handle_file(movie_path, mock_args, track_data, capsys):
     movie_path.ensure(file=True)
     handle_file(movie_path, mock_args)
+    out, err = capsys.readouterr()
+    assert "Found 43 subtitles" in out
 
 def test_if_series_is_downloaded(series_episode, tmpdir, mock_args,
                                  mock_videoclip):

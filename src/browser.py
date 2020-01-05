@@ -1,17 +1,17 @@
-import logging
 from typing import List, Dict, Union
 
 import requests
 from bs4 import BeautifulSoup
 import re
 import difflib
-from src.exceptions import PyNapiTimeException, MovieNotFound
+
+from src.common import parser_request
+from src.exceptions import PyNapiTimeException
 
 Movie = Dict[str, Union[str, int]]
 
 
 def time_to_ms(timestr):
-    splitted = timestr.split(":")
     extracted = re.search(r'(\d{2}):(\d{2}):(\d{2}).(\d*)', timestr).groups()
     time_ms = 0.0
     time_ms += float(extracted[0]) * 3600 * 1000
@@ -22,7 +22,7 @@ def time_to_ms(timestr):
 
 
 class Browser:
-    SUBTITLES_ROUND_PRECISION = 2
+    FPS_ROUND_PRECISION = 2
 
     def __init__(self, video):
         self.video = video
@@ -34,7 +34,9 @@ class Browser:
 
         self.video.collect_movie_data()
 
-    def get_matched_movies(self) -> List[Movie]:
+    def _get_movies(self) -> List[Movie]:
+        """Returns search result of movies with similar titles from napi website."""
+
         TITLE_STR = "tytul"
         URL_STR = "href"
 
@@ -44,11 +46,8 @@ class Browser:
             "queryString": self.video.title,
             "queryYear": self.video.year,
         }
-
-        res = requests.post(self.search_url, values)
-        res.raise_for_status()
-        soup = BeautifulSoup(res.content, "html.parser")
-        movies = soup.findAll("a", class_="movieTitleCat")
+        movies_list = parser_request.post(self.search_url, values)
+        movies = movies_list.findAll("a", class_="movieTitleCat")
 
         matched_movies = []
         for movie in movies:
@@ -68,11 +67,12 @@ class Browser:
         return matched_movies
 
     @staticmethod
-    def similarity_score(title1, title2):
+    def _similarity_score(title1, title2):
         return difflib.SequenceMatcher(None, title1, title2).ratio()
 
-    def find_napiprojekt_movie(self) -> Movie:
-        movies = self.get_matched_movies()
+    def _get_movie(self) -> Movie:
+        """Choose best matched movie from movies list."""
+        movies = self._get_movies()
         if not self.video.year:
             # if no year is provided, detection cannot be performed, return first
             return movies[0]
@@ -84,7 +84,7 @@ class Browser:
 
     def _get_best_by_title_similarity(self, matched_by_year) -> Movie:
         matched_by_year_scores = [
-            self.similarity_score(self.video.title, movie["title"]) for movie in matched_by_year
+            self._similarity_score(self.video.title, movie["title"]) for movie in matched_by_year
         ]
         max_score_idx = matched_by_year_scores.index(max(matched_by_year_scores))
         if self.use_scores:
@@ -104,13 +104,10 @@ class Browser:
         return matched_by_year
 
     @staticmethod
-    def get_pages(content, current):
-        pagination = content.findAll("span", class_="pagin")
-        pages = [current["href"]]
-        for i in pagination:
-            if i.parent["href"] != current["href"]:
-                pages.append(i.parent["href"])
-        return pages
+    def _get_soup_pages(soup_subtitles_page):
+        """Iterate over pagination to get page urls."""
+        pagination = soup_subtitles_page.findAll("span", class_="pagin")
+        return [page.parent["href"] for page in pagination]
 
     def _extract_subtitles(self, page):
         subtitles_list = []
@@ -137,57 +134,51 @@ class Browser:
             except AttributeError:
                 fps = None
 
-            subtitles_list.append(
-                dict(
+            yield dict(
                     hash=subtitle_html["href"].split(":")[1],
                     duration=duration_ms,
                     fps_str=fps,
                     metadata=metadata,
                 )
-            )
-
-        return subtitles_list
 
     def get_subtitles_list(self):
-        self.movie = self.find_napiprojekt_movie()
-        movie_url = self.root_url + self.movie["href"]
+        self.movie = self._get_movie()
+        movie_url = self._get_landing_page_url()
+        first_subtitles_page_url = self._get_first_subtitles_page_url(movie_url)
+        soup_first_subtitles_page = parser_request.get(first_subtitles_page_url)
+        subtitles_pages = self._get_soup_pages(soup_first_subtitles_page)
+        print("There are %s pages with subtitles." % len(subtitles_pages))
 
-        res_movie = requests.post(movie_url)
-        assert res_movie.status_code == 200
-        soup_movie = BeautifulSoup(res_movie.content, "html.parser")
-        # this is proxy page, scrape href and go to subtitles page
-        proxy_page_url_landing = soup_movie.find("a", string="napisy")
-        if proxy_page_url_landing is None:
-            raise MovieNotFound("Movie was not loaded from napiprojekt. Check movie on website.")
-        proxy_page_url = self.root_url + proxy_page_url_landing["href"]
-        # get first subtitles page
-        proxy_page_url = self._build_movie_page(proxy_page_url)
-        movie_page_res = requests.get(proxy_page_url)
-        assert movie_page_res.status_code == 200
-        first_subs_page = BeautifulSoup(movie_page_res.content, "html.parser")
-        pages = self.get_pages(first_subs_page, proxy_page_url_landing)
-        # page is already cached
-        return self._extract_subtitles_from_pages(first_subs_page, pages)
+        subtitles_list = [subtitles for subtitles in self._subtitle_iterator(subtitles_pages)]
+        self._check_subtitles_exists(subtitles_list)
 
-
-    def _extract_subtitles_from_pages(self, first_subs_page, pages):
-        subtitles_list = self._extract_subtitles(first_subs_page)
-        print("There are %s pages with subtitles." % len(pages))
-        for page in pages[1:]:
-            subtitles_list += self._extract_subtitles(page)
         print("Found %s subtitles total." % len(subtitles_list))
+        filtered_subtitles = self._clean_subtitles(subtitles_list)
+        return filtered_subtitles
 
+    def _check_subtitles_exists(self, subtitles_list):
         if not subtitles_list:
             raise PyNapiTimeException(
                 "No subtitles found for movie %s[%s]."
                 % (self.video.title, self.video.year)
             )
 
-        filtered_subtitles = self._clean_subtitles(subtitles_list)
-        return filtered_subtitles
+    def _subtitle_iterator(self, pages):
+        for page in pages:
+            for subtitle in self._extract_subtitles(page):
+                yield subtitle
+
+    def _get_first_subtitles_page_url(self, movie_url):
+        # there is one intermediate page with movie metadata as landing page
+        soup_landing_page = parser_request.post(movie_url)
+        first_subtitle_page_path = soup_landing_page.find("a", string="napisy")["href"]
+        return self.root_url + self._build_first_subtitles_url(first_subtitle_page_path)
+
+    def _get_landing_page_url(self):
+        return self.root_url + self.movie["href"]
 
     def _clean_subtitles(self, subtitles_list):
-        video_fps = round(self.video.frame_rate, self.SUBTITLES_ROUND_PRECISION)
+        video_fps = round(self.video.frame_rate, self.FPS_ROUND_PRECISION)
         for subtitles in subtitles_list:
             subtitles["duration_diff"] = abs(self.video.duration - subtitles["duration"])
             subtitles["fps"] = self._clean_fps(subtitles["fps_str"])
@@ -200,10 +191,11 @@ class Browser:
     def _clean_fps(cls, subtitles):
         if subtitles:
             fps_str = re.findall(r'(\d+\.\d+|\d+)', subtitles)[0]
-            return round(float(fps_str), cls.SUBTITLES_ROUND_PRECISION)
+            return round(float(fps_str), cls.FPS_ROUND_PRECISION)
         return 0
 
-    def _build_movie_page(self, proxy_page_url):
+    def _build_first_subtitles_url(self, proxy_page_url):
+        """Process first movie page, prepare for series."""
         if self.video.season or self.video.episode:
             if self.video.season and self.video.episode:
                 proxy_page_url += f"-s{self.video.season}e{self.video.episode}"
