@@ -1,6 +1,6 @@
 import pytest
 
-from utils import browser
+from src import browser
 
 
 def test_found_movies(mock_videoclip, browser):

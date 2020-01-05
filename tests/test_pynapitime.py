@@ -29,7 +29,7 @@ def test_subtitles_are_saved_when_absolute_path(series_episode, tmpdir,
 
 def test_subtitles_are_saved_when_relative_path(series_episode, tmpdir,
                                                    mock_videoclip, mock_args):
-    with patch("utils.downloader.Path") as mock_path:
+    with patch("src.downloader.Path") as mock_path:
         handle_file(f"relative/path/{series_episode}", mock_args)
         assert mock_path.called
         assert mock_path.call_args[0][0].parts == ('relative', 'path', series_episode)

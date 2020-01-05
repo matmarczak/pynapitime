@@ -5,7 +5,7 @@ import requests
 from bs4 import BeautifulSoup
 import re
 import difflib
-from utils.exceptions import PyNapiTimeException, MovieNotFound
+from src.exceptions import PyNapiTimeException, MovieNotFound
 
 Movie = Dict[str, Union[str, int]]
 

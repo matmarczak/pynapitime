@@ -1,5 +1,5 @@
 from pathlib import Path
-from utils.video import Video
+from src.video import Video
 
 
 class Explorer:

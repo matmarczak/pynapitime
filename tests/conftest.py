@@ -4,8 +4,8 @@ from unittest.mock import Mock, patch
 import pytest
 import vcr
 
-from utils.browser import Browser
-from utils.video import Video
+from src.browser import Browser
+from src.video import Video
 
 series_episodes = [
     "Friends.S01E09.1994.super.mkv",
@@ -60,7 +60,7 @@ def browser(video):
 @pytest.fixture
 def track_data():
     mock_extract = Mock(return_value=(2134, "24"))
-    with patch("utils.video.Video._extract_video_track", mock_extract):
+    with patch("src.video.Video._extract_video_track", mock_extract):
         yield
 
 
@@ -82,7 +82,7 @@ def response_mocks():
 @pytest.fixture
 def mock_videoclip():
     with patch(
-            "utils.video.VideoFileClip",
+            "src.video.VideoFileClip",
             return_value=Mock(duration=(23 * 60 + 30), fps=24)
     ) as mock_video:
         yield mock_video

@@ -1,5 +1,5 @@
 import pathlib
-from utils.video import Video
+from src.video import Video
 
 
 class TestSeriesEpisodes:
