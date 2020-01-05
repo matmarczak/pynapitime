@@ -4,8 +4,8 @@ from unittest.mock import Mock, patch
 import pytest
 import vcr
 
-from utils.browser import Browser
-from utils.video import Video
+from src.browser import Browser
+from src.video import Video
 
 series_episodes = [
     "Friends.S01E09.1994.super.mkv",
@@ -23,21 +23,30 @@ class TestMovie(NamedTuple):
     filename: str
     title: str
     year: int
+    subtitle_count: int
 
 
 test_movies = [
     TestMovie(
         "Jumanji.Welcome.to.the.Jungle.2017.480p.BluRay.x264.mkv",
         "Jumanji Welcome to the Jungle",
-        2017
+        2017,
+        43
     ),
     TestMovie(
         "Jumanji.Welcome.to.the.Jungle.480p.BluRay.x264.mkv",
         "Jumanji Welcome to the Jungle",
-        None
+        None,
+        43
+    ),
+    TestMovie(
+        "Friends.S02E13.576p.1994.BluRay.DD5.1.x264-HiSD.mkv",
+        "Friends",
+        1994,
+        26
     )
 ]
-@pytest.fixture(params=test_movies)
+@pytest.fixture(params=test_movies, ids=lambda x: x.filename)
 def movie(request):
     return request.param
 
@@ -59,20 +68,21 @@ def browser(video):
 
 @pytest.fixture
 def track_data():
-    mock_extract = Mock(return_value=(2134, "24"))
-    with patch("utils.video.Video._extract_video_track", mock_extract):
+    mock_extract = Mock(return_value=(2134, 23.97))
+    with patch("src.video.Video._extract_video_track", mock_extract):
         yield
 
 
 vcr_mocks = vcr.VCR(
-    serializer='yaml',
-    cassette_library_dir='tests/response_mocks',
-    record_mode='once',
-    match_on=("method", "scheme", "host", "port", "path", "query", "body")
+    serializer="yaml",
+    cassette_library_dir="tests/response_mocks",
+    record_mode="new_episodes",
+    match_on=("method", "scheme", "host", "port", "path", "query", "body"),
+    decode_compressed_response=True,
 )
 
 
-@pytest.fixture(autouse=False, scope="session")
+@pytest.fixture(autouse=True, scope="session")
 def response_mocks():
     with vcr_mocks.use_cassette("napiprojekt_mocks.yml"):
         yield
@@ -81,7 +91,7 @@ def response_mocks():
 @pytest.fixture
 def mock_videoclip():
     with patch(
-            "utils.video.VideoFileClip",
+            "src.video.VideoFileClip",
             return_value=Mock(duration=(23 * 60 + 30), fps=24)
     ) as mock_video:
         yield mock_video

@@ -11,12 +11,12 @@ TEST_MOVIES = [
 
 
 def file_mocker(func):
-    video_track_mock = mock.Mock(duration=2134, frame_rate="24")
+    video_track_mock = mock.Mock(duration=2134, frame_rate="23.97")
 
     return_mock = mock.Mock()
     return_mock.return_value = video_track_mock
 
-    @mock.patch("utils.video.Video._extract_video_track", return_mock)
+    @mock.patch("src.video.Video._extract_video_track", return_mock)
     def decorate_function(cls):
         return func(cls)
 
