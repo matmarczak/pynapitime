@@ -1,5 +1,5 @@
 import unittest
-from utils.downloader import download_subs
+from src.downloader import download_subs
 from .factories import movie_file, TEST_MOVIES
 
 
