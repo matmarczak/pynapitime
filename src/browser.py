@@ -26,8 +26,8 @@ class Browser:
 
     def __init__(self, video):
         self.video = video
-        self.search_url = "http://napiprojekt.pl/ajax/search_catalog.php"
-        self.root_url = "http://napiprojekt.pl/"
+        self.search_url = "https://napiprojekt.pl/ajax/search_catalog.php"
+        self.root_url = "https://www.napiprojekt.pl/"
         self.use_scores = False
         self.movie = None
         self.subtitles_list = None
@@ -147,6 +147,9 @@ class Browser:
         first_subtitles_page_url = self._get_first_subtitles_page_url(movie_url)
         soup_first_subtitles_page = parser_request.get(first_subtitles_page_url)
         subtitles_pages = self._get_soup_pages(soup_first_subtitles_page)
+        if self._is_pagination_empty(subtitles_pages):
+            subtitles_pages = [soup_first_subtitles_page]
+
         print("There are %s pages with subtitles." % len(subtitles_pages))
 
         subtitles_list = [subtitles for subtitles in self._subtitle_iterator(subtitles_pages)]
@@ -155,6 +158,9 @@ class Browser:
         print("Found %s subtitles total." % len(subtitles_list))
         filtered_subtitles = self._clean_subtitles(subtitles_list)
         return filtered_subtitles
+
+    def _is_pagination_empty(self, subtitles_pages):
+        return not subtitles_pages
 
     def _check_subtitles_exists(self, subtitles_list):
         if not subtitles_list:
@@ -171,6 +177,7 @@ class Browser:
     def _get_first_subtitles_page_url(self, movie_url):
         # there is one intermediate page with movie metadata as landing page
         soup_landing_page = parser_request.post(movie_url)
+        # import pdb;pdb.set_trace()
         first_subtitle_page_path = soup_landing_page.find("a", string="napisy")["href"]
         return self.root_url + self._build_first_subtitles_url(first_subtitle_page_path)
 

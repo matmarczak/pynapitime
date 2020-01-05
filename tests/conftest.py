@@ -23,21 +23,30 @@ class TestMovie(NamedTuple):
     filename: str
     title: str
     year: int
+    subtitle_count: int
 
 
 test_movies = [
     TestMovie(
         "Jumanji.Welcome.to.the.Jungle.2017.480p.BluRay.x264.mkv",
         "Jumanji Welcome to the Jungle",
-        2017
+        2017,
+        43
     ),
     TestMovie(
         "Jumanji.Welcome.to.the.Jungle.480p.BluRay.x264.mkv",
         "Jumanji Welcome to the Jungle",
-        None
+        None,
+        43
+    ),
+    TestMovie(
+        "Friends.S02E13.576p.1994.BluRay.DD5.1.x264-HiSD.mkv",
+        "Friends",
+        1994,
+        26
     )
 ]
-@pytest.fixture(params=test_movies)
+@pytest.fixture(params=test_movies, ids=lambda x: x.filename)
 def movie(request):
     return request.param
 

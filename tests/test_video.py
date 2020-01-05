@@ -25,7 +25,7 @@ class TestVideo:
         video.subs_exist()
         assert not video.subtitles_exist
 
-    def test_check_if_existing_subtitles_are_handles(self, video):
+    def test_check_if_existing_subtitles_are_handled(self, video):
         subs_path = video.path.with_suffix(".mkv.txt")
         subs_path.touch()
         with subs_path.open("w") as file:
