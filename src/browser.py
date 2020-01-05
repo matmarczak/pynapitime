@@ -22,6 +22,8 @@ def time_to_ms(timestr):
 
 
 class Browser:
+    SUBTITLES_ROUND_PRECISION = 2
+
     def __init__(self, video):
         self.video = video
         self.search_url = "http://napiprojekt.pl/ajax/search_catalog.php"
@@ -110,7 +112,7 @@ class Browser:
                 pages.append(i.parent["href"])
         return pages
 
-    def extract_subtitles_from(self, page):
+    def _extract_subtitles(self, page):
         subtitles_list = []
         if isinstance(page, BeautifulSoup):
             pass
@@ -139,7 +141,7 @@ class Browser:
                 dict(
                     hash=subtitle_html["href"].split(":")[1],
                     duration=duration_ms,
-                    fps=fps,
+                    fps_str=fps,
                     metadata=metadata,
                 )
             )
@@ -162,26 +164,44 @@ class Browser:
         proxy_page_url = self._build_movie_page(proxy_page_url)
         movie_page_res = requests.get(proxy_page_url)
         assert movie_page_res.status_code == 200
-        movie_page = BeautifulSoup(movie_page_res.content, "html.parser")
-        pages = self.get_pages(movie_page, proxy_page_url_landing)
+        first_subs_page = BeautifulSoup(movie_page_res.content, "html.parser")
+        pages = self.get_pages(first_subs_page, proxy_page_url_landing)
         # page is already cached
-        subtitles_list = self.extract_subtitles_from(movie_page)
+        return self._extract_subtitles_from_pages(first_subs_page, pages)
+
+
+    def _extract_subtitles_from_pages(self, first_subs_page, pages):
+        subtitles_list = self._extract_subtitles(first_subs_page)
         print("There are %s pages with subtitles." % len(pages))
-
         for page in pages[1:]:
-            subtitles_list += self.extract_subtitles_from(page)
+            subtitles_list += self._extract_subtitles(page)
+        print("Found %s subtitles total." % len(subtitles_list))
 
-        for subtitles in subtitles_list:
-            subtitles["duration_diff"] = abs(self.video.duration - subtitles["duration"])
-        # sort to get best matches first
-        subtitles_list.sort(key=lambda x: x["duration_diff"])
         if not subtitles_list:
             raise PyNapiTimeException(
                 "No subtitles found for movie %s[%s]."
                 % (self.video.title, self.video.year)
             )
-        print("Found %s subtitles." % len(subtitles_list))
+
+        filtered_subtitles = self._clean_subtitles(subtitles_list)
+        return filtered_subtitles
+
+    def _clean_subtitles(self, subtitles_list):
+        video_fps = round(self.video.frame_rate, self.SUBTITLES_ROUND_PRECISION)
+        for subtitles in subtitles_list:
+            subtitles["duration_diff"] = abs(self.video.duration - subtitles["duration"])
+            subtitles["fps"] = self._clean_fps(subtitles["fps_str"])
+            subtitles["fps_diff"] = abs(subtitles["fps"] - video_fps)
+        # sort to get best matches first, use fps diff to prioritize movies with same fps
+        subtitles_list.sort(key=lambda x: (x["duration_diff"], x["fps_diff"]))
         return subtitles_list
+
+    @classmethod
+    def _clean_fps(cls, subtitles):
+        if subtitles:
+            fps_str = re.findall(r'(\d+\.\d+|\d+)', subtitles)[0]
+            return round(float(fps_str), cls.SUBTITLES_ROUND_PRECISION)
+        return 0
 
     def _build_movie_page(self, proxy_page_url):
         if self.video.season or self.video.episode:

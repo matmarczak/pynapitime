@@ -59,15 +59,15 @@ def browser(video):
 
 @pytest.fixture
 def track_data():
-    mock_extract = Mock(return_value=(2134, "24"))
+    mock_extract = Mock(return_value=(2134, 23.97))
     with patch("src.video.Video._extract_video_track", mock_extract):
         yield
 
 
 vcr_mocks = vcr.VCR(
-    serializer="json",
+    serializer="yaml",
     cassette_library_dir="tests/response_mocks",
-    record_mode="new_episodes",
+    record_mode="once",
     match_on=("method", "scheme", "host", "port", "path", "query", "body"),
     decode_compressed_response=True,
 )
@@ -75,7 +75,7 @@ vcr_mocks = vcr.VCR(
 
 @pytest.fixture(autouse=True, scope="session")
 def response_mocks():
-    with vcr_mocks.use_cassette("napiprojekt_mocks.json"):
+    with vcr_mocks.use_cassette("napiprojekt_mocks.yml"):
         yield
 
 

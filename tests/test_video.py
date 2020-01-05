@@ -38,7 +38,7 @@ class TestVideo:
     def test_get_track_data(self, track_data, video):
         video.get_track_data()
         assert isinstance(video.duration, int)
-        assert isinstance(video.frame_rate, str)
+        assert isinstance(video.frame_rate, float)
 
     def test_results_tuples(self, video, track_data):
         video.collect_movie_data()
@@ -55,4 +55,4 @@ class TestVideo:
     def test_gather_data(self, video, track_data):
         video.collect_movie_data()
         assert video.duration == 2134
-        assert video.frame_rate == "24"
+        assert video.frame_rate == 23.97

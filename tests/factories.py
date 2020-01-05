@@ -11,7 +11,7 @@ TEST_MOVIES = [
 
 
 def file_mocker(func):
-    video_track_mock = mock.Mock(duration=2134, frame_rate="24")
+    video_track_mock = mock.Mock(duration=2134, frame_rate="23.97")
 
     return_mock = mock.Mock()
     return_mock.return_value = video_track_mock
