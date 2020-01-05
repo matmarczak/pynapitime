@@ -67,15 +67,27 @@ def main(args):
         type=int,
         default=None
     )
+    parser.add_argument(
+        "-s",
+        "--hash",
+        help="specify hash to get subtitles for",
+        action="store",
+        type=str,
+        default=None
+    )
     args = parser.parse_args(args)
 
     if Path(args.path).is_file():
+        if args.hash:
+            download_subs(args.path, args.hash)
+            return 0
         handle_file(args.path, args)
     else:
         explorer = Explorer(args.path)
         explorer.search_files()
         for i in explorer.no_subs_videos:
             handle_file(i.path, args)
+        return 0
 
 
 if __name__ == "__main__":

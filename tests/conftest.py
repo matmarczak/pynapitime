@@ -76,7 +76,7 @@ def track_data():
 vcr_mocks = vcr.VCR(
     serializer="yaml",
     cassette_library_dir="tests/response_mocks",
-    record_mode="once",
+    record_mode="new_episodes",
     match_on=("method", "scheme", "host", "port", "path", "query", "body"),
     decode_compressed_response=True,
 )
